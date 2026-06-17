@@ -1,5 +1,5 @@
-from src.environment.traffic.car_spawn_configuration import CarSpawnConfiguration
-from src.environment.traffic.car_checkpoint import CarCheckpoint
+from src.environment.traffic.spawn_configuration import SpawnConfiguration
+from src.environment.traffic.checkpoint import Checkpoint
 
 COLUMNS = 21
 ROWS = 21
@@ -48,12 +48,12 @@ CAR_SPAWN_POSITIONS = [
 ]
 
 CAR_SPAWN_CONFIGURATIONS = [
-    CarSpawnConfiguration(  # West -> East, Left
+    SpawnConfiguration(  # West -> East, Left
         lane_index=0,
         initial_direction=(1, 0),
         initial_angle=-90.0,
         checkpoints=[
-            CarCheckpoint(
+            Checkpoint(
                 position=(12, 12),
                 callback=lambda car: (
                     car.set_direction(
@@ -66,18 +66,18 @@ CAR_SPAWN_CONFIGURATIONS = [
             )
         ]
     ),
-    CarSpawnConfiguration(  # West -> East, Forward/Right
+    SpawnConfiguration(  # West -> East, Forward/Right
         lane_index=1,
         initial_direction=(1, 0),
         initial_angle=-90.0,
         checkpoints=[]
     ),
-    CarSpawnConfiguration(  # South -> North, Left
+    SpawnConfiguration(  # South -> North, Left
         lane_index=2,
         initial_direction=(0, -1),
         initial_angle=0.0,
         checkpoints=[
-            CarCheckpoint(
+            Checkpoint(
                 position=(12, 8),
                 callback=lambda car: (
                     car.set_direction(
@@ -90,18 +90,18 @@ CAR_SPAWN_CONFIGURATIONS = [
             )
         ]
     ),
-    CarSpawnConfiguration(  # South -> North, Forward/Right
+    SpawnConfiguration(  # South -> North, Forward/Right
         lane_index=3,
         initial_direction=(0, -1),
         initial_angle=0.0,
         checkpoints=[]
     ),
-    CarSpawnConfiguration(  # East -> West, Left
+    SpawnConfiguration(  # East -> West, Left
         lane_index=4,
         initial_direction=(-1, 0),
         initial_angle=90.0,
         checkpoints=[
-            CarCheckpoint(
+            Checkpoint(
                 position=(8, 8),
                 callback=lambda car: (
                     car.set_direction(
@@ -114,18 +114,18 @@ CAR_SPAWN_CONFIGURATIONS = [
             )
         ]
     ),
-    CarSpawnConfiguration(  # East -> West, Forward/Right
+    SpawnConfiguration(  # East -> West, Forward/Right
         lane_index=5,
         initial_direction=(-1, 0),
         initial_angle=90.0,
         checkpoints=[]
     ),
-    CarSpawnConfiguration(  # North -> South, Left
+    SpawnConfiguration(  # North -> South, Left
         lane_index=6,
         initial_direction=(0, 1),
         initial_angle=180.0,
         checkpoints=[
-            CarCheckpoint(
+            Checkpoint(
                 position=(8, 12),
                 callback=lambda car: (
                     car.set_direction(
@@ -138,7 +138,7 @@ CAR_SPAWN_CONFIGURATIONS = [
             )
         ]
     ),
-    CarSpawnConfiguration(  # North -> South, Forward/Right
+    SpawnConfiguration(  # North -> South, Forward/Right
         lane_index=7,
         initial_direction=(0, 1),
         initial_angle=180.0,

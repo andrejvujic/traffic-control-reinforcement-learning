@@ -1,13 +1,13 @@
 from dataclasses import dataclass, asdict
-from src.environment.traffic.car_checkpoint import CarCheckpoint
+from src.environment.traffic.checkpoint import Checkpoint
 
 
 @dataclass
-class CarSpawnConfiguration:
+class SpawnConfiguration:
     lane_index: int
     initial_direction: tuple[int, int]
     initial_angle: float
-    checkpoints: list[CarCheckpoint]
+    checkpoints: list[Checkpoint]
 
     def __init__(
         self,

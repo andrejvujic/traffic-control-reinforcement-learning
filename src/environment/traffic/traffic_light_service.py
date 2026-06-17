@@ -6,7 +6,8 @@ import pygame
 
 class TrafficLightService:
     def __init__(self):
-        self.traffic_lights = [TrafficLight(index=index) for index in range(self.TRAFFIC_LIGHT_COUNT)]
+        self.taffic_light_count = len(TRAFFIC_LIGHT_POSITIONS)
+        self.traffic_lights = [TrafficLight(index=index) for index in range(self.taffic_light_count)]
 
     def enable(self, traffic_light_index):
         traffic_light = self.traffic_lights[traffic_light_index]
@@ -16,6 +17,13 @@ class TrafficLightService:
         traffic_light = self.traffic_lights[traffic_light_index]
         traffic_light.disable()
 
+    def toggle(self, traffic_light_index):
+        if self.is_enabled(traffic_light_index):
+            self.disable(traffic_light_index)
+            return
+
+        self.enable(traffic_light_index)
+
     def disable_all(self):
         for traffic_light in self.traffic_lights:
             traffic_light.disable()
@@ -23,6 +31,12 @@ class TrafficLightService:
     def is_enabled(self, traffic_light_index):
         traffic_light = self.traffic_lights[traffic_light_index]
         return traffic_light.is_enabled
+
+    def state(self):
+        return [traffic_light.is_enabled for traffic_light in self.traffic_lights]
+
+    def position(self, index):
+        return TRAFFIC_LIGHT_POSITIONS[index]
 
     def draw(self, surface: pygame.Surface):
         for index, traffic_light in enumerate(self.traffic_lights):
@@ -43,5 +57,3 @@ class TrafficLightService:
                 (tl_x, tl_y),
                 8.0
             )
-
-    TRAFFIC_LIGHT_COUNT = 10

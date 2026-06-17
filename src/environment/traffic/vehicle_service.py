@@ -56,10 +56,7 @@ class VehicleService:
     def has_collision(self):
         for car in self.cars:
             for other_car in self.cars:
-                if car == other_car or car.lane_index == other_car.lane_index:
-                    continue
-
-                if car.position() == other_car.position():
+                if car.collides_with(other_car):
                     return True
 
         return False

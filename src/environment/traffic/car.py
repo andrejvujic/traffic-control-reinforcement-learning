@@ -54,3 +54,9 @@ class Car:
 
     def is_alive(self):
         return 0 <= self.x < COLUMNS and 0 <= self.y < ROWS
+
+    def collides_with(self, other):
+        if isinstance(other, Car):
+            return other.lane_index != self.lane_index and other.position() == self.position()
+
+        raise Exception(f'Collision checking not implemented for {type(other)}')

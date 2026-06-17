@@ -1,4 +1,4 @@
-from src.game.constants import CELL_SIZE
+from src.game.constants import CELL_SIZE, ROWS, COLUMNS
 
 import pygame
 
@@ -51,3 +51,6 @@ class Car:
 
         for checkpoint in self.checkpoints:
             checkpoint(self)
+
+    def is_alive(self):
+        return 0 <= self.x < COLUMNS and 0 <= self.y < ROWS

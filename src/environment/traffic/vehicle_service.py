@@ -23,11 +23,11 @@ class VehicleService:
         self.ticks = self.ticks + 1
 
         if self.ticks % CAR_SPAWN_INTERVAL == 0 and random_bool(CAR_SPAWN_PROBABILITY):
-            configuration = self.__random_car_configuration()
+            configuration = self.__get_random_car_configuration()
 
             self.cars.append(
                 Car(
-                    texture=self.__random_car_texture(),
+                    texture=self.__get_random_car_texture(),
                     initial_position=self.__car_spawn_position(
                         configuration.lane_index,
                         configuration.initial_direction
@@ -40,9 +40,11 @@ class VehicleService:
             if self.ticks % CAR_MOVEMENT_INTERVAL == 0 and self.can_move(car):
                 car.move()
 
+        self.__remove_dead_cars()
+
     def can_move(self, car: Car):
         stop_position = CAR_STOP_POSITIONS[car.lane_index]
-        sibling_cars = self.__lane_cars(car.lane_index)
+        sibling_cars = self.__get_lane_cars(car.lane_index)
 
         for sibling_car in sibling_cars:
             if car.next_position() == sibling_car.position():
@@ -62,12 +64,15 @@ class VehicleService:
 
         return False
 
-    def __lane_cars(self, lane_index):
+    def __remove_dead_cars(self):
+        self.cars = [car for car in self.cars if car.is_alive()]
+
+    def __get_lane_cars(self, lane_index):
         return [car for car in self.cars if car.lane_index == lane_index]
 
     def __car_spawn_position(self, lane_index, movement_direction):
         default_position = CAR_SPAWN_POSITIONS[lane_index]
-        sibling_cars = self.__lane_cars(lane_index)
+        sibling_cars = self.__get_lane_cars(lane_index)
 
         for sibling_car in sibling_cars:
             if sibling_car.position() == default_position:
@@ -103,10 +108,10 @@ class VehicleService:
 
         return textures
 
-    def __random_car_texture(self):
+    def __get_random_car_texture(self):
         return random.choice(self.__car_textures)
 
-    def __random_car_configuration(self):
+    def __get_random_car_configuration(self):
         return random.choice(CAR_CONFIGURATIONS)
 
     CAR_TEXTURES_DIRECTORY = 'assets/cars'

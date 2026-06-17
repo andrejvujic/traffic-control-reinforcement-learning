@@ -7,6 +7,8 @@ from src.environment.traffic.traffic_light_service import TrafficLightService
 
 class Game:
     def __init__(self):
+        pygame.init()
+        pygame.display.set_caption('Traffic Simulation')
         self.surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
 
@@ -15,8 +17,6 @@ class Game:
         self.map = Map()
 
     def run(self):
-        pygame.init()
-
         running = True
 
         while running:

@@ -7,36 +7,35 @@ import pygame
 class TrafficLightService:
     def __init__(self):
         self.taffic_light_count = len(TRAFFIC_LIGHT_POSITIONS)
-        self.traffic_lights = [TrafficLight(index=index) for index in range(self.taffic_light_count)]
+        self.traffic_lights: list[TrafficLight] = [
+            TrafficLight(index=index) for index in range(self.taffic_light_count)
+        ]
 
-    def enable(self, traffic_light_index):
+    def turn_green(self, traffic_light_index):
         traffic_light = self.traffic_lights[traffic_light_index]
-        traffic_light.enable()
+        traffic_light.turn_green()
 
-    def disable(self, traffic_light_index):
+    def turn_red(self, traffic_light_index):
         traffic_light = self.traffic_lights[traffic_light_index]
-        traffic_light.disable()
+        traffic_light.turn_red()
+
+    def turn_all_red(self):
+        for traffic_light in self.traffic_lights:
+            traffic_light.turn_red()
 
     def toggle(self, traffic_light_index):
-        if self.is_enabled(traffic_light_index):
-            self.disable(traffic_light_index)
+        if self.is_passable(traffic_light_index):
+            self.turn_red(traffic_light_index)
             return
 
-        self.enable(traffic_light_index)
+        self.turn_green(traffic_light_index)
 
-    def disable_all(self):
-        for traffic_light in self.traffic_lights:
-            traffic_light.disable()
-
-    def is_enabled(self, traffic_light_index):
+    def is_passable(self, traffic_light_index):
         traffic_light = self.traffic_lights[traffic_light_index]
-        return traffic_light.is_enabled
+        return traffic_light.is_passable()
 
-    def state(self):
-        return [traffic_light.is_enabled for traffic_light in self.traffic_lights]
-
-    def position(self, index):
-        return TRAFFIC_LIGHT_POSITIONS[index]
+    def reset(self):
+        self.turn_all_red()
 
     def draw(self, surface: pygame.Surface):
         for index, traffic_light in enumerate(self.traffic_lights):
@@ -53,7 +52,7 @@ class TrafficLightService:
 
             pygame.draw.circle(
                 surface,
-                TL_ON_COLOR if traffic_light.is_enabled else TL_OFF_COLOR,
+                TL_ON_COLOR if traffic_light.is_passable() else TL_OFF_COLOR,
                 (tl_x, tl_y),
                 8.0
             )

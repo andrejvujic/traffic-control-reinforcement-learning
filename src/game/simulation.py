@@ -40,6 +40,9 @@ class Game:
             self.clock.tick(60)
 
             self.vechicle_service.update()
+            if self.vechicle_service.has_collision():
+                self.vechicle_service.reset()
+                self.traffic_light_service.reset()
 
         pygame.quit()
 

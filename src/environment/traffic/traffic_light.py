@@ -1,10 +1,21 @@
+from enum import Enum
+
+
+class TrafficLightState(Enum):
+    GREEN = 0
+    RED = 1
+
+
 class TrafficLight:
     def __init__(self, index):
         self.index = index
-        self.is_enabled = False
+        self.state = TrafficLightState.RED
 
-    def enable(self):
-        self.is_enabled = True
+    def turn_green(self):
+        self.state = TrafficLightState.GREEN
 
-    def disable(self):
-        self.is_enabled = False
+    def turn_red(self):
+        self.state = TrafficLightState.RED
+
+    def is_passable(self):
+        return self.state == TrafficLightState.GREEN

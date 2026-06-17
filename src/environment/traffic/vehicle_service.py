@@ -15,6 +15,10 @@ class VehicleService:
         self.cars: list[Car] = []
         self.__car_textures = self.__load_car_textures()
 
+    def reset(self):
+        self.cars = []
+        self.ticks = 0
+
     def update(self):
         self.ticks = self.ticks + 1
 
@@ -44,8 +48,19 @@ class VehicleService:
             if car.next_position() == sibling_car.position():
                 return False
 
-        must_stop = car.position() == stop_position and not self.traffic_light_service.is_enabled(car.lane_index)
+        must_stop = car.position() == stop_position and not self.traffic_light_service.is_passable(car.lane_index)
         return not must_stop
+
+    def has_collision(self):
+        for car in self.cars:
+            for other_car in self.cars:
+                if car == other_car or car.lane_index == other_car.lane_index:
+                    continue
+
+                if car.position() == other_car.position():
+                    return True
+
+        return False
 
     def __lane_cars(self, lane_index):
         return [car for car in self.cars if car.lane_index == lane_index]

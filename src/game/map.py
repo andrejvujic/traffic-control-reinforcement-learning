@@ -6,13 +6,13 @@ import os
 class Map:
     def __init__(self):
         self.__map = self.__get_map()
-        self.__tile_mapping = self.__get_tile_mapping()
+        self.__tiles = self.__get_tiles()
 
     def draw(self, surface: pygame.Surface):
         for row_index, row in enumerate(self.__map):
             for column_index, column in enumerate(row):
                 scaled_tile = pygame.transform.scale(
-                    self.__tile_mapping[column],
+                    self.__tiles[column],
                     (CELL_SIZE, CELL_SIZE)
                 )
 
@@ -21,30 +21,24 @@ class Map:
                     (CELL_SIZE * column_index, CELL_SIZE * row_index)
                 )
 
-    def __get_tile_mapping(self):
-        mapping = {}
+    def __get_tiles(self):
+        assets = {}
 
         for file_name in os.listdir(self.ASSETS_DIRECTORY):
             asset_name, file_extension = file_name.split('.')
             if file_extension not in ['bmp']:
                 continue
 
-            file_path = os.path.join(
-                self.ASSETS_DIRECTORY,
-                file_name
-            )
+            file_path = os.path.join(self.ASSETS_DIRECTORY, file_name)
+            assets[asset_name] = pygame.image.load(file_path).convert()
 
-            mapping[asset_name] = pygame.image.load(
-                file_path
-            ).convert()
-
-        return mapping
+        return assets
 
     def __get_map(self):
         G = self.GRASS
         R = self.ROAD
         RE = self.ROAD_EDGE
-        RR = self.ROAD_DANGER
+        RD = self.ROAD_DANGER
         LV = self.ROAD_LINE_VERTICAL
         LH = self.ROAD_LINE_HORIZONTAL
         T = self.TRAIN_TRACK
@@ -68,8 +62,6 @@ class Map:
 
         TS0 = self.TRACK_STOP_0
         TS1 = self.TRACK_STOP_1
-        TS2 = self.TRACK_STOP_2
-        TS3 = self.TRACK_STOP_3
 
         TEW = self.TRAFFIC_LIGHT_EAST_WEST
         TWE = self.TRAFFIC_LIGHT_WEST_EAST
@@ -87,19 +79,19 @@ class Map:
             [G, G, G, TNS, TNS, RE, R, LV, R, T1, T, T3, R, LV, R, RE, TEW, G, G, G, G],
             [RE, RE, RE, RE, RE, RE, NS0, LV, NS1, T1, T, T3, R, LV, R, RE, RE, RE, RE, RE, RE],
 
-            [R, R, R, R, R, R, RR, RR, RR, RR, T, RR, RR, RR, RR, EW0, R, R, R, R, R],
-            [LH, LH, LH, LH, LH, LH, RR, RR, RR, RR, T, RR, RR, RR, RR, LH, LH, LH, LH, LH, LH],
-            [R, R, R, R, R, R, RR, RR, RR, RR, T, RR, RR, RR, RR, EW1, R, R, R, R, R],
+            [R, R, R, R, R, R, RD, RD, RD, RD, T, RD, RD, RD, RD, EW0, R, R, R, R, R],
+            [LH, LH, LH, LH, LH, LH, RD, RD, RD, RD, T, RD, RD, RD, RD, LH, LH, LH, LH, LH, LH],
+            [R, R, R, R, R, R, RD, RD, RD, RD, T, RD, RD, RD, RD, EW1, R, R, R, R, R],
 
-            [T2, T2, T2, T2, T2, TTL1, RR, RR, RR, RR, T, RR, RR, RR, RR, T2, T2, T2, T2, T2, T2],
+            [T2, T2, T2, T2, T2, TTL1, RD, RD, RD, RD, T, RD, RD, RD, RD, T2, T2, T2, T2, T2, T2],
             [T, T, T, T, T, TS0, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T],
-            [T0, T0, T0, T0, T0, T0, RR, RR, RR, RR, T, RR, RR, RR, RR, T0, T0, T0, T0, T0, T0],
+            [T0, T0, T0, T0, T0, T0, RD, RD, RD, RD, T, RD, RD, RD, RD, T0, T0, T0, T0, T0, T0],
 
-            [R, R, R, R, R, WE1, RR, RR, RR, RR, T, RR, RR, RR, RR, R, R, R, R, R, R],
-            [LH, LH, LH, LH, LH, LH, RR, RR, RR, RR, T, RR, RR, RR, RR, LH, LH, LH, LH, LH, LH],
-            [R, R, R, R, R, WE0, RR, RR, RR, RR, T, RR, RR, RR, RR, R, R, R, R, R, R],
+            [R, R, R, R, R, WE1, RD, RD, RD, RD, T, RD, RD, RD, RD, R, R, R, R, R, R],
+            [LH, LH, LH, LH, LH, LH, RD, RD, RD, RD, T, RD, RD, RD, RD, LH, LH, LH, LH, LH, LH],
+            [R, R, R, R, R, WE0, RD, RD, RD, RD, T, RD, RD, RD, RD, R, R, R, R, R, R],
 
-            [RE, RE, RE, RE, RE, RE, R, LV, R, TTL0, TS3, T3, SN1, LV, SN0, RE, RE, RE, RE, RE, RE],
+            [RE, RE, RE, RE, RE, RE, R, LV, R, TTL0, TS1, T3, SN1, LV, SN0, RE, RE, RE, RE, RE, RE],
             [G, G, G, G, TWE, RE, R, LV, R, T1, T, T3, R, LV, R, RE, TSN, TSN, G, G, G],
             [G, G, G, G, TWE, RE, R, LV, R, T1, T, T3, R, LV, R, RE, G, G, G, G, G],
             [G, G, G, G, G, RE, R, LV, R, T1, T, T3, R, LV, R, RE, G, G, G, G, G],
@@ -136,8 +128,6 @@ class Map:
 
     TRACK_STOP_0 = 'track_stop_0'
     TRACK_STOP_1 = 'track_stop_1'
-    TRACK_STOP_2 = 'track_stop_2'
-    TRACK_STOP_3 = 'track_stop_3'
 
     TRAFFIC_LIGHT_EAST_WEST = 'traffic_light_east_west'
     TRAFFIC_LIGHT_WEST_EAST = 'traffic_light_west_east'

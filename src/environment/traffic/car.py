@@ -1,5 +1,6 @@
 from src.game.constants import CELL_SIZE, ROWS, COLUMNS
 from src.environment.traffic.vehicle import Vehicle
+
 import pygame
 
 
@@ -35,7 +36,14 @@ class Car(Vehicle):
         return 0 <= self.x < COLUMNS and 0 <= self.y < ROWS
 
     def collides_with(self, other):
+        if self == other:
+            return False
+
         if isinstance(other, Car):
             return other.lane_index != self.lane_index and other.position() == self.position()
+
+        from src.environment.traffic.train import Train
+        if isinstance(other, Train):
+            return self.position() in other.occupied_positions()
 
         raise Exception(f'Collision checking not implemented for {type(other)}')

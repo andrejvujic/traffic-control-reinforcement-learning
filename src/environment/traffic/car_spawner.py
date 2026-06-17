@@ -1,6 +1,6 @@
 from src.environment.traffic.vehicle_spawner import VehicleSpawner
 from src.environment.traffic.car import Car
-from src.game.constants import CAR_SPAWN_POSITIONS, CAR_SPAWN_CONFIGURATIONS, CELL_SIZE
+from src.game.constants import VEHICLE_SPAWN_POSITIONS, CAR_SPAWN_CONFIGURATIONS, CELL_SIZE
 
 import pygame
 import random
@@ -24,7 +24,7 @@ class CarSpawner(VehicleSpawner):
         )
 
     def generate_spawn_position(self, spawn_configuration, existing_cars):
-        default_position = CAR_SPAWN_POSITIONS[spawn_configuration.lane_index]
+        default_position = VEHICLE_SPAWN_POSITIONS[spawn_configuration.lane_index]
         sibling_cars = [
             sibling_car for sibling_car in existing_cars
             if sibling_car.lane_index == spawn_configuration.lane_index

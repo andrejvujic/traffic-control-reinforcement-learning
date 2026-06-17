@@ -4,6 +4,7 @@ from src.environment.traffic.checkpoint import Checkpoint
 COLUMNS = 21
 ROWS = 21
 CELL_SIZE = 36
+TRAIN_LENGTH = 10
 
 SCREEN_WIDTH = CELL_SIZE * COLUMNS
 SCREEN_HEIGHT = CELL_SIZE * ROWS
@@ -25,18 +26,7 @@ TRAFFIC_LIGHT_POSITIONS = [
     (9, 15),   # Train, South -> North
 ]
 
-CAR_STOP_POSITIONS = [
-    (5, 12),
-    (5, 14),
-    (12, 15),
-    (14, 15),
-    (15, 8),
-    (15, 6),
-    (8, 5),
-    (6, 5)
-]
-
-CAR_SPAWN_POSITIONS = [
+VEHICLE_SPAWN_POSITIONS = [
     (0, 12),
     (0, 14),
     (12, 21),
@@ -44,7 +34,22 @@ CAR_SPAWN_POSITIONS = [
     (21, 8),
     (21, 6),
     (8, 0),
-    (6, 0)
+    (6, 0),
+    (0, 10),
+    (10, 20)
+]
+
+VEHICLE_STOP_POSITIONS = [
+    (5, 12),
+    (5, 14),
+    (12, 15),
+    (14, 15),
+    (15, 8),
+    (15, 6),
+    (8, 5),
+    (6, 5),
+    (5, 10),
+    (10, 15)
 ]
 
 CAR_SPAWN_CONFIGURATIONS = [
@@ -146,6 +151,26 @@ CAR_SPAWN_CONFIGURATIONS = [
     ),
 ]
 
+TRAIN_SPAWN_CONFIGRUATIONS = [
+    SpawnConfiguration(  # West -> East
+        lane_index=8,
+        initial_direction=(1, 0),
+        initial_angle=0.0,
+        checkpoints=[]
+    ),
+    SpawnConfiguration(  # South -> North
+        lane_index=9,
+        initial_direction=(0, -1),
+        initial_angle=-90.0,
+        checkpoints=[]
+    ),
+]
+
+
 CAR_MOVEMENT_INTERVAL = 4
 CAR_SPAWN_INTERVAL = 12
 CAR_SPAWN_PROBABILITY = 0.75
+
+TRAIN_MOVEMENT_INTERVAL = 5
+TRAIN_SPAWN_INTERVAL = 24
+TRAIN_SPAWN_PROBABILITY = 0.5

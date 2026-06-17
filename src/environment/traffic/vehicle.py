@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from src.game.constants import ROWS, COLUMNS
 import pygame
 
 

@@ -1,10 +1,9 @@
 from src.environment.traffic.car import Car
+from src.environment.traffic.car_spawner import CarSpawner
 from src.environment.traffic.traffic_light_service import TrafficLightService
-from src.game.constants import CAR_MOVEMENT_INTERVAL, CAR_SPAWN_INTERVAL, CAR_SPAWN_PROBABILITY, CAR_CONFIGURATIONS, CAR_SPAWN_POSITIONS, CAR_STOP_POSITIONS, CELL_SIZE
+from src.game.constants import CAR_MOVEMENT_INTERVAL, CAR_SPAWN_INTERVAL, CAR_SPAWN_PROBABILITY, CAR_STOP_POSITIONS
 from src.game.utilities import random_bool
 
-import os
-import random
 import pygame
 
 
@@ -13,7 +12,8 @@ class VehicleService:
         self.traffic_light_service = traffic_light_service
         self.ticks = 0
         self.cars: list[Car] = []
-        self.__car_textures = self.__load_car_textures()
+
+        self.car_spawner = CarSpawner(assets_directory='assets/cars')
 
     def reset(self):
         self.cars = []
@@ -23,16 +23,9 @@ class VehicleService:
         self.ticks = self.ticks + 1
 
         if self.ticks % CAR_SPAWN_INTERVAL == 0 and random_bool(CAR_SPAWN_PROBABILITY):
-            configuration = self.__get_random_car_configuration()
-
             self.cars.append(
-                Car(
-                    texture=self.__get_random_car_texture(),
-                    initial_position=self.__car_spawn_position(
-                        configuration.lane_index,
-                        configuration.initial_direction
-                    ),
-                    **configuration.as_dict()
+                self.car_spawner.spawn(
+                    existing_cars=self.cars
                 )
             )
 
@@ -55,60 +48,18 @@ class VehicleService:
 
     def has_collision(self):
         for car in self.cars:
-            for other_car in self.cars:
-                if car.collides_with(other_car):
-                    return True
+            if car.collides_with_any(self.cars):
+                return True
 
         return False
 
     def __remove_dead_cars(self):
+        # TODO: This removes cars which had to be spawned outside of the screen...
         self.cars = [car for car in self.cars if car.is_alive()]
 
     def __get_lane_cars(self, lane_index):
         return [car for car in self.cars if car.lane_index == lane_index]
 
-    def __car_spawn_position(self, lane_index, movement_direction):
-        default_position = CAR_SPAWN_POSITIONS[lane_index]
-        sibling_cars = self.__get_lane_cars(lane_index)
-
-        for sibling_car in sibling_cars:
-            if sibling_car.position() == default_position:
-                dx, dy = movement_direction
-                last_sibling = sibling_cars[-1]
-                sibling_x, sibling_y = last_sibling.position()
-                return sibling_x - dx, sibling_y - dy
-
-        return default_position
-
     def draw(self, surface: pygame.Surface):
         for car in self.cars:
             car.draw(surface)
-
-    def __load_car_textures(self):
-        textures = []
-
-        for file_name in os.listdir(self.CAR_TEXTURES_DIRECTORY):
-            _, file_extension = file_name.split('.')
-            if file_extension not in ['bmp']:
-                continue
-
-            texture = pygame.image.load(
-                os.path.join(self.CAR_TEXTURES_DIRECTORY, file_name)
-            ).convert_alpha()
-
-            textures.append(
-                pygame.transform.scale(
-                    texture,
-                    (CELL_SIZE, CELL_SIZE)
-                )
-            )
-
-        return textures
-
-    def __get_random_car_texture(self):
-        return random.choice(self.__car_textures)
-
-    def __get_random_car_configuration(self):
-        return random.choice(CAR_CONFIGURATIONS)
-
-    CAR_TEXTURES_DIRECTORY = 'assets/cars'

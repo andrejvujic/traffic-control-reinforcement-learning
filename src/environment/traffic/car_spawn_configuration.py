@@ -3,7 +3,7 @@ from src.environment.traffic.car_checkpoint import CarCheckpoint
 
 
 @dataclass
-class CarConfiguration:
+class CarSpawnConfiguration:
     lane_index: int
     initial_direction: tuple[int, int]
     initial_angle: float

@@ -1,4 +1,4 @@
-from src.environment.traffic.car_configuration import CarConfiguration
+from src.environment.traffic.car_spawn_configuration import CarSpawnConfiguration
 from src.environment.traffic.car_checkpoint import CarCheckpoint
 
 COLUMNS = 21
@@ -47,8 +47,8 @@ CAR_SPAWN_POSITIONS = [
     (6, 0)
 ]
 
-CAR_CONFIGURATIONS = [
-    CarConfiguration(  # West -> East, Left
+CAR_SPAWN_CONFIGURATIONS = [
+    CarSpawnConfiguration(  # West -> East, Left
         lane_index=0,
         initial_direction=(1, 0),
         initial_angle=-90.0,
@@ -66,13 +66,13 @@ CAR_CONFIGURATIONS = [
             )
         ]
     ),
-    CarConfiguration(  # West -> East, Forward/Right
+    CarSpawnConfiguration(  # West -> East, Forward/Right
         lane_index=1,
         initial_direction=(1, 0),
         initial_angle=-90.0,
         checkpoints=[]
     ),
-    CarConfiguration(  # South -> North, Left
+    CarSpawnConfiguration(  # South -> North, Left
         lane_index=2,
         initial_direction=(0, -1),
         initial_angle=0.0,
@@ -90,13 +90,13 @@ CAR_CONFIGURATIONS = [
             )
         ]
     ),
-    CarConfiguration(  # South -> North, Forward/Right
+    CarSpawnConfiguration(  # South -> North, Forward/Right
         lane_index=3,
         initial_direction=(0, -1),
         initial_angle=0.0,
         checkpoints=[]
     ),
-    CarConfiguration(  # East -> West, Left
+    CarSpawnConfiguration(  # East -> West, Left
         lane_index=4,
         initial_direction=(-1, 0),
         initial_angle=90.0,
@@ -114,13 +114,13 @@ CAR_CONFIGURATIONS = [
             )
         ]
     ),
-    CarConfiguration(  # East -> West, Forward/Right
+    CarSpawnConfiguration(  # East -> West, Forward/Right
         lane_index=5,
         initial_direction=(-1, 0),
         initial_angle=90.0,
         checkpoints=[]
     ),
-    CarConfiguration(  # North -> South, Left
+    CarSpawnConfiguration(  # North -> South, Left
         lane_index=6,
         initial_direction=(0, 1),
         initial_angle=180.0,
@@ -138,7 +138,7 @@ CAR_CONFIGURATIONS = [
             )
         ]
     ),
-    CarConfiguration(  # North -> South, Forward/Right
+    CarSpawnConfiguration(  # North -> South, Forward/Right
         lane_index=7,
         initial_direction=(0, 1),
         initial_angle=180.0,

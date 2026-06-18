@@ -32,9 +32,6 @@ class Car(Vehicle):
             (self.x * CELL_SIZE, self.y * CELL_SIZE)
         )
 
-    def is_alive(self):
-        return 0 <= self.x < COLUMNS and 0 <= self.y < ROWS
-
     def collides_with(self, other):
         if self == other:
             return False

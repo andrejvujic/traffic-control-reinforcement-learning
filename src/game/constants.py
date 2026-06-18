@@ -11,7 +11,7 @@ TOTAL_LANES = 10
 CAR_LANES = range(0, 8)
 TRAIN_LANES = range(8, 10)
 
-MAX_TICKS_PER_EPISODE = 5000
+MAX_TICKS_PER_EPISODE = 10000
 
 SCREEN_WIDTH = CELL_SIZE * COLUMNS
 SCREEN_HEIGHT = CELL_SIZE * ROWS
@@ -82,6 +82,10 @@ CAR_SPAWN_CONFIGURATIONS = [
                     car.set_angle(0.0)
                 ),
             ),
+            Checkpoint(
+                position=(12, -1),
+                callback=lambda vehicle: vehicle.mark_off_screen()
+            ),
         ]
     ),
     SpawnConfiguration(  # West -> East, Forward
@@ -89,7 +93,6 @@ CAR_SPAWN_CONFIGURATIONS = [
         initial_direction=(1, 0),
         initial_angle=-90.0,
         checkpoints=[
-            # TODO: Turning Right Not Implemented Yet
             Checkpoint(
                 position=(6, 14),
                 callback=lambda vehicle: vehicle.set_state(VehicleState.IN_INTERSECTION)
@@ -97,6 +100,10 @@ CAR_SPAWN_CONFIGURATIONS = [
             Checkpoint(
                 position=(15, 14),
                 callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION)
+            ),
+            Checkpoint(
+                position=(21, 14),
+                callback=lambda vehicle: vehicle.mark_off_screen()
             ),
         ]
     ),
@@ -122,6 +129,10 @@ CAR_SPAWN_CONFIGURATIONS = [
                 position=(6, 15),
                 callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION)
             ),
+            Checkpoint(
+                position=(6, 21),
+                callback=lambda vehicle: vehicle.mark_off_screen()
+            ),
         ]
     ),
     SpawnConfiguration(  # South -> North, Left
@@ -146,6 +157,10 @@ CAR_SPAWN_CONFIGURATIONS = [
                 position=(5, 8),
                 callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
             ),
+            Checkpoint(
+                position=(-1, 8),
+                callback=lambda vehicle: vehicle.mark_off_screen()
+            ),
         ]
     ),
     SpawnConfiguration(  # South -> North, Forward
@@ -160,6 +175,10 @@ CAR_SPAWN_CONFIGURATIONS = [
             Checkpoint(
                 position=(14, 5),
                 callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
+            ),
+            Checkpoint(
+                position=(14, -1),
+                callback=lambda vehicle: vehicle.mark_off_screen()
             ),
         ]
     ),
@@ -185,6 +204,10 @@ CAR_SPAWN_CONFIGURATIONS = [
                 position=(15, 14),
                 callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
             ),
+            Checkpoint(
+                position=(21, 14),
+                callback=lambda vehicle: vehicle.mark_off_screen()
+            ),
         ]
     ),
     SpawnConfiguration(  # East -> West, Left
@@ -209,6 +232,10 @@ CAR_SPAWN_CONFIGURATIONS = [
                 position=(8, 15),
                 callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
             ),
+            Checkpoint(
+                position=(8, 21),
+                callback=lambda vehicle: vehicle.mark_off_screen()
+            ),
         ]
     ),
     SpawnConfiguration(  # East -> West, Forward
@@ -223,6 +250,10 @@ CAR_SPAWN_CONFIGURATIONS = [
             Checkpoint(
                 position=(5, 6),
                 callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
+            ),
+            Checkpoint(
+                position=(-1, 6),
+                callback=lambda vehicle: vehicle.mark_off_screen()
             ),
         ]
     ),
@@ -247,6 +278,10 @@ CAR_SPAWN_CONFIGURATIONS = [
             Checkpoint(
                 position=(14, 5),
                 callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
+            ),
+            Checkpoint(
+                position=(14, -1),
+                callback=lambda vehicle: vehicle.mark_off_screen()
             ),
         ]
     ),
@@ -274,6 +309,10 @@ CAR_SPAWN_CONFIGURATIONS = [
                 position=(15, 12),
                 callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
             ),
+            Checkpoint(
+                position=(21, 12),
+                callback=lambda vehicle: vehicle.mark_off_screen()
+            ),
         ]
     ),
     SpawnConfiguration(  # North -> South, Forward
@@ -288,6 +327,10 @@ CAR_SPAWN_CONFIGURATIONS = [
             Checkpoint(
                 position=(6, 15),
                 callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
+            ),
+            Checkpoint(
+                position=(6, 21),
+                callback=lambda vehicle: vehicle.mark_off_screen()
             ),
         ]
     ),
@@ -313,6 +356,10 @@ CAR_SPAWN_CONFIGURATIONS = [
                 position=(5, 6),
                 callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
             ),
+            Checkpoint(
+                position=(-1, 6),
+                callback=lambda vehicle: vehicle.mark_off_screen()
+            ),
         ]
     ),
 ]
@@ -330,7 +377,11 @@ TRAIN_SPAWN_CONFIGURATIONS = [
             Checkpoint(
                 position=(24, 10),
                 callback=lambda train: train.set_state(VehicleState.PASSED_INTERSECTION)
-            )
+            ),
+            Checkpoint(
+                position=(30, 10),
+                callback=lambda vehicle: vehicle.mark_off_screen()
+            ),
         ]
     ),
     SpawnConfiguration(  # Train, South -> North
@@ -345,16 +396,29 @@ TRAIN_SPAWN_CONFIGURATIONS = [
             Checkpoint(
                 position=(10, -4),
                 callback=lambda train: train.set_state(VehicleState.PASSED_INTERSECTION)
+            ),
+            Checkpoint(
+                position=(10, -10),
+                callback=lambda vehicle: vehicle.mark_off_screen()
             )
         ]
     ),
 ]
 
-
+"""
 CAR_MOVEMENT_INTERVAL = 4
-CAR_SPAWN_INTERVAL = 12
+CAR_SPAWN_INTERVAL = 8
 CAR_SPAWN_PROBABILITY = 0.75
 
 TRAIN_MOVEMENT_INTERVAL = 5
 TRAIN_SPAWN_INTERVAL = 256
 TRAIN_SPAWN_PROBABILITY = 0.25
+"""
+
+CAR_MOVEMENT_INTERVAL = 1
+CAR_SPAWN_INTERVAL = 2
+CAR_SPAWN_PROBABILITY = 0.85
+
+TRAIN_MOVEMENT_INTERVAL = 1
+TRAIN_SPAWN_INTERVAL = 48
+TRAIN_SPAWN_PROBABILITY = 0.3

@@ -6,12 +6,7 @@ class BasicAgent:
         self.ticks = 0
         self.active_lane_index = 0
 
-        self.previous_action = self.__initial_action()
-
-    def __initial_action(self):
-        initial_action = self.__default_action()
-        initial_action[0] = initial_action[1] = True
-        return initial_action
+        self.previous_action = self.__default_action()
 
     def __default_action(self):
         return [False for _ in range(TOTAL_LANES)]
@@ -63,4 +58,4 @@ class BasicAgent:
 
         return self.previous_action
 
-    UPDATE_INTERVAL = 150
+    UPDATE_INTERVAL = 35

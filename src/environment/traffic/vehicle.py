@@ -24,6 +24,10 @@ class Vehicle(ABC):
 
         self.state = VehicleState.APPROACHING_INTERSECTION
 
+        self.is_off_screen = False
+
+        self.steps_waiting = 0
+
     @abstractmethod
     def draw(self, surface: pygame.Surface):
         pass
@@ -53,9 +57,14 @@ class Vehicle(ABC):
             if self.did_reach_checkpoint(checkpoint):
                 checkpoint.acquire(self)
 
-    @abstractmethod
-    def is_alive(self):
-        pass
+    def on_screen(self):
+        return not self.is_off_screen
+
+    def mark_off_screen(self):
+        self.is_off_screen = True
+
+    def mark_waiting(self):
+        self.steps_waiting = self.steps_waiting + 1
 
     @abstractmethod
     def collides_with(self, other):

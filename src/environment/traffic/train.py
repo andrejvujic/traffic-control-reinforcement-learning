@@ -38,11 +38,6 @@ class Train(Vehicle):
             (x * CELL_SIZE, y * CELL_SIZE)
         )
 
-    def is_alive(self):
-        dx, dy = self.direction
-        return (0 <= self.x < COLUMNS and 0 <= self.y < ROWS) or\
-            (0 <= self.x - dx * TRAIN_LENGTH < COLUMNS and 0 <= self.y - dy * TRAIN_LENGTH < ROWS)
-
     def occupied_positions(self):
         x, y = self.x, self.y
         dx, dy = self.direction

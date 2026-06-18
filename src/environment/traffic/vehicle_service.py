@@ -18,8 +18,14 @@ class VehicleService:
         self.traffic_light_service = traffic_light_service
         self.ticks = 0
 
+        self.total_cars_passed = 0
+        self.total_waiting_time_cars = 0
+
         self.cars: list[Car] = []
         self.car_spawner = CarSpawner(assets_directory='assets/cars')
+
+        self.total_trains_passed = 0
+        self.total_waiting_time_trains = 0
 
         self.trains: list[Train] = []
         self.train_spawner = TrainSpawner(assets_directory='assets/trains')
@@ -28,6 +34,12 @@ class VehicleService:
         self.cars = []
         self.trains = []
         self.ticks = 0
+
+        self.total_cars_passed = 0
+        self.total_waiting_time_cars = 0
+
+        self.total_trains_passed = 0
+        self.total_waiting_time_trains = 0
 
     def update(self):
         self.ticks = self.ticks + 1
@@ -50,13 +62,18 @@ class VehicleService:
         for car in self.cars:
             if self.ticks % CAR_MOVEMENT_INTERVAL == 0 and self.can_car_move(car):
                 car.move()
+                continue
+
+            car.mark_waiting()
 
         for train in self.trains:
             if self.ticks % TRAIN_MOVEMENT_INTERVAL == 0 and self.can_train_move(train):
                 train.move()
+                continue
 
-        self.__remove_dead_cars()
-        self.__remove_dead_trains()
+            train.mark_waiting()
+
+        self.__remove_dead_vehicles()
 
         return self.state(), self.evaluate_state(), self.has_collision(), self.ticks > MAX_TICKS_PER_EPISODE
 
@@ -84,12 +101,19 @@ class VehicleService:
 
         return False
 
-    def __remove_dead_cars(self):
-        # TODO: This removes cars which had to be spawned outside of the screen...
-        self.cars = [car for car in self.cars if car.is_alive()]
+    def __remove_dead_vehicles(self):
+        for vehicle in [*self.cars, *self.trains]:
+            if not vehicle.on_screen():
+                if isinstance(vehicle, Car):
+                    self.total_cars_passed = self.total_cars_passed + 1
+                    self.total_waiting_time_cars = self.total_waiting_time_cars + vehicle.steps_waiting
 
-    def __remove_dead_trains(self):
-        self.trains = [train for train in self.trains if train.is_alive()]
+                if isinstance(vehicle, Train):
+                    self.total_trains_passed = self.total_trains_passed + 1
+                    self.total_waiting_time_trains = self.total_waiting_time_trains + vehicle.steps_waiting
+
+        self.cars = [car for car in self.cars if car.on_screen()]
+        self.trains = [train for train in self.trains if train.on_screen()]
 
     def __get_lane_vehicles(self, lane_index):
         vehicles = [*self.cars, *self.trains]
@@ -141,6 +165,24 @@ class VehicleService:
         reward = reward + passed_vehicles_total * 10.0
 
         return reward
+
+    def average_waiting_time_for_cars(self):
+        if self.total_cars_passed > 0:
+            return self.total_waiting_time_cars / self.total_cars_passed
+
+        return 0.0
+
+    def average_waiting_time_for_trains(self):
+        if self.total_trains_passed > 0:
+            return self.total_waiting_time_trains / self.total_trains_passed
+
+        return 0.0
+
+    def flow_rate(self):
+        if self.ticks > 0:
+            return (self.total_cars_passed + self.total_trains_passed) / self.ticks
+
+        return 0.0
 
     def draw(self, surface: pygame.Surface):
         for car in self.cars:

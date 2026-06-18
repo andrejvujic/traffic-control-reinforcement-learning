@@ -157,7 +157,7 @@ class VehicleService:
                     reward = reward - 0.5 * approaching_vehicle_count
                     continue
 
-                reward = reward - 20.0
+                reward = reward - 50.0
 
         passed_vehicles_per_lane = [self.__count_vehicles_passed(lane_index) for lane_index in range(TOTAL_LANES)]
         passed_vehicles_total = sum(passed_vehicles_per_lane)
@@ -183,6 +183,9 @@ class VehicleService:
             return (self.total_cars_passed + self.total_trains_passed) / self.ticks
 
         return 0.0
+
+    def total_vehicles(self):
+        return len([*self.cars, *self.trains])
 
     def draw(self, surface: pygame.Surface):
         for car in self.cars:

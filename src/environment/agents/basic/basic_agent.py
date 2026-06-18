@@ -58,4 +58,4 @@ class BasicAgent:
 
         return self.previous_action
 
-    UPDATE_INTERVAL = 35
+    UPDATE_INTERVAL = 36

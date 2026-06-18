@@ -142,9 +142,17 @@ class Game:
         self.surface.blit(text_surface, (0, 96))
 
         text_surface = self.font.render(
-            f'Episode Length -> {self.vechicle_service.ticks:5d}',
+            f'Total Vehicles -> {self.vechicle_service.total_vehicles():5d}',
             True,
             (255, 255, 255),
             (0, 0, 0)
         )
         self.surface.blit(text_surface, (0, 120))
+
+        text_surface = self.font.render(
+            f'Episode Length -> {self.vechicle_service.ticks:5d}',
+            True,
+            (255, 255, 255),
+            (0, 0, 0)
+        )
+        self.surface.blit(text_surface, (0, 144))

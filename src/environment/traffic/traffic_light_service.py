@@ -34,6 +34,17 @@ class TrafficLightService:
         traffic_light = self.traffic_lights[traffic_light_index]
         return traffic_light.is_passable()
 
+    def state(self):
+        return [traffic_light.is_passable() for traffic_light in self.traffic_lights]
+
+    def set_state(self, traffic_light_state):
+        for index, is_passable in enumerate(traffic_light_state):
+            if is_passable:
+                self.traffic_lights[index].turn_green()
+                continue
+
+            self.traffic_lights[index].turn_red()
+
     def reset(self):
         self.turn_all_red()
 

@@ -6,6 +6,7 @@ from src.game.map import Map
 
 from src.environment.traffic.traffic_light_service import TrafficLightService
 from src.environment.traffic.vehicle_service import VehicleService
+from src.environment.agents.basic.basic_agent import BasicAgent
 
 
 class Game:
@@ -19,8 +20,12 @@ class Game:
         self.vechicle_service = VehicleService(traffic_light_service=self.traffic_light_service)
         self.map = Map()
 
+        self.agent = BasicAgent()
+
     def run(self):
         running = True
+
+        current_state = self.vechicle_service.state()
 
         while running:
             for event in pygame.event.get():
@@ -39,10 +44,20 @@ class Game:
 
             self.clock.tick(60)
 
-            self.vechicle_service.update()
-            if self.vechicle_service.has_collision():
+            action = self.agent.next_action(current_state)
+            self.traffic_light_service.set_state(action)
+
+            next_state, reward, terminated, truncated = self.vechicle_service.update()
+
+            print(reward)
+
+            if terminated or truncated:
                 self.vechicle_service.reset()
                 self.traffic_light_service.reset()
+
+                next_state = self.vechicle_service.state()
+
+            current_state = next_state
 
         pygame.quit()
 

@@ -53,8 +53,6 @@ class Vehicle(ABC):
             if self.did_reach_checkpoint(checkpoint):
                 checkpoint.acquire(self)
 
-                print(self.state)
-
     @abstractmethod
     def is_alive(self):
         pass

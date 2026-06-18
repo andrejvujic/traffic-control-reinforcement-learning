@@ -1,5 +1,6 @@
 from src.environment.traffic.spawn_configuration import SpawnConfiguration
 from src.environment.traffic.checkpoint import Checkpoint
+from src.environment.traffic.vehicle_state import VehicleState
 
 COLUMNS = 21
 ROWS = 21
@@ -59,23 +60,63 @@ CAR_SPAWN_CONFIGURATIONS = [
         initial_angle=-90.0,
         checkpoints=[
             Checkpoint(
+                position=(6, 12),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.IN_INTERSECTION)
+            ),
+            Checkpoint(
+                position=(12, 5),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION)
+            ),
+            Checkpoint(
                 position=(12, 12),
                 callback=lambda car: (
                     car.set_direction(
                         (0, -1)
                     ),
-                    car.set_angle(
-                        0.0
-                    )
+                    car.set_angle(0.0)
                 ),
-            )
+            ),
         ]
     ),
-    SpawnConfiguration(  # West -> East, Forward/Right
+    SpawnConfiguration(  # West -> East, Forward
         lane_index=1,
         initial_direction=(1, 0),
         initial_angle=-90.0,
-        checkpoints=[]
+        checkpoints=[
+            # TODO: Turning Right Not Implemented Yet
+            Checkpoint(
+                position=(6, 14),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.IN_INTERSECTION)
+            ),
+            Checkpoint(
+                position=(15, 14),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION)
+            ),
+        ]
+    ),
+    SpawnConfiguration(  # West -> East, Right
+        lane_index=1,
+        initial_direction=(1, 0),
+        initial_angle=-90.0,
+        checkpoints=[
+            Checkpoint(
+                position=(6, 14),
+                callback=lambda car: (
+                    car.set_direction(
+                        (0, 1)
+                    ),
+                    car.set_angle(-180.0)
+                ),
+            ),
+            Checkpoint(
+                position=(6, 14),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.IN_INTERSECTION)
+            ),
+            Checkpoint(
+                position=(6, 15),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION)
+            ),
+        ]
     ),
     SpawnConfiguration(  # South -> North, Left
         lane_index=2,
@@ -84,22 +125,61 @@ CAR_SPAWN_CONFIGURATIONS = [
         checkpoints=[
             Checkpoint(
                 position=(12, 8),
-                callback=lambda car: (
-                    car.set_direction(
+                callback=lambda vehicle: (
+                    vehicle.set_direction(
                         (-1, 0)
                     ),
-                    car.set_angle(
-                        90.0
-                    )
+                    vehicle.set_angle(90.0)
                 ),
-            )
+            ),
+            Checkpoint(
+                position=(12, 14),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.IN_INTERSECTION),
+            ),
+            Checkpoint(
+                position=(5, 8),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
+            ),
         ]
     ),
-    SpawnConfiguration(  # South -> North, Forward/Right
+    SpawnConfiguration(  # South -> North, Forward
         lane_index=3,
         initial_direction=(0, -1),
         initial_angle=0.0,
-        checkpoints=[]
+        checkpoints=[
+            Checkpoint(
+                position=(14, 14),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.IN_INTERSECTION),
+            ),
+            Checkpoint(
+                position=(14, 5),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
+            ),
+        ]
+    ),
+    SpawnConfiguration(  # South -> North, Right
+        lane_index=3,
+        initial_direction=(0, -1),
+        initial_angle=0.0,
+        checkpoints=[
+            Checkpoint(
+                position=(14, 14),
+                callback=lambda car: (
+                    car.set_direction(
+                        (1, 0)
+                    ),
+                    car.set_angle(-90.0)
+                ),
+            ),
+            Checkpoint(
+                position=(14, 14),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.IN_INTERSECTION),
+            ),
+            Checkpoint(
+                position=(15, 14),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
+            ),
+        ]
     ),
     SpawnConfiguration(  # East -> West, Left
         lane_index=4,
@@ -107,29 +187,72 @@ CAR_SPAWN_CONFIGURATIONS = [
         initial_angle=90.0,
         checkpoints=[
             Checkpoint(
+                position=(14, 8),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.IN_INTERSECTION),
+            ),
+            Checkpoint(
                 position=(8, 8),
                 callback=lambda car: (
                     car.set_direction(
                         (0, 1)
                     ),
-                    car.set_angle(
-                        180.0
-                    )
+                    car.set_angle(180.0)
                 ),
-            )
+            ),
+            Checkpoint(
+                position=(8, 15),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
+            ),
         ]
     ),
-    SpawnConfiguration(  # East -> West, Forward/Right
+    SpawnConfiguration(  # East -> West, Forward
         lane_index=5,
         initial_direction=(-1, 0),
         initial_angle=90.0,
-        checkpoints=[]
+        checkpoints=[
+            Checkpoint(
+                position=(14, 6),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.IN_INTERSECTION),
+            ),
+            Checkpoint(
+                position=(5, 6),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
+            ),
+        ]
+    ),
+    SpawnConfiguration(  # East -> West, Right
+        lane_index=5,
+        initial_direction=(-1, 0),
+        initial_angle=90.0,
+        checkpoints=[
+            Checkpoint(
+                position=(14, 6),
+                callback=lambda car: (
+                    car.set_direction(
+                        (0, -1)
+                    ),
+                    car.set_angle(0.0)
+                ),
+            ),
+            Checkpoint(
+                position=(14, 6),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.IN_INTERSECTION),
+            ),
+            Checkpoint(
+                position=(14, 5),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
+            ),
+        ]
     ),
     SpawnConfiguration(  # North -> South, Left
         lane_index=6,
         initial_direction=(0, 1),
         initial_angle=180.0,
         checkpoints=[
+            Checkpoint(
+                position=(8, 6),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.IN_INTERSECTION),
+            ),
             Checkpoint(
                 position=(8, 12),
                 callback=lambda car: (
@@ -140,29 +263,84 @@ CAR_SPAWN_CONFIGURATIONS = [
                         -90.0
                     )
                 ),
-            )
+            ),
+            Checkpoint(
+                position=(15, 12),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
+            ),
         ]
     ),
-    SpawnConfiguration(  # North -> South, Forward/Right
+    SpawnConfiguration(  # North -> South, Forward
         lane_index=7,
         initial_direction=(0, 1),
         initial_angle=180.0,
-        checkpoints=[]
+        checkpoints=[
+            Checkpoint(
+                position=(6, 6),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.IN_INTERSECTION),
+            ),
+            Checkpoint(
+                position=(6, 15),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
+            ),
+        ]
+    ),
+    SpawnConfiguration(  # North -> South, Right
+        lane_index=7,
+        initial_direction=(0, 1),
+        initial_angle=180.0,
+        checkpoints=[
+            Checkpoint(
+                position=(6, 6),
+                callback=lambda car: (
+                    car.set_direction(
+                        (-1, 0)
+                    ),
+                    car.set_angle(90.0)
+                ),
+            ),
+            Checkpoint(
+                position=(6, 6),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.IN_INTERSECTION),
+            ),
+            Checkpoint(
+                position=(5, 6),
+                callback=lambda vehicle: vehicle.set_state(VehicleState.PASSED_INTERSECTION),
+            ),
+        ]
     ),
 ]
 
-TRAIN_SPAWN_CONFIGRUATIONS = [
-    SpawnConfiguration(  # West -> East
+TRAIN_SPAWN_CONFIGURATIONS = [
+    SpawnConfiguration(  # Train, West -> East
         lane_index=8,
         initial_direction=(1, 0),
         initial_angle=0.0,
-        checkpoints=[]
+        checkpoints=[
+            Checkpoint(
+                position=(6, 10),
+                callback=lambda train: train.set_state(VehicleState.IN_INTERSECTION)
+            ),
+            Checkpoint(
+                position=(24, 10),
+                callback=lambda train: train.set_state(VehicleState.PASSED_INTERSECTION)
+            )
+        ]
     ),
-    SpawnConfiguration(  # South -> North
+    SpawnConfiguration(  # Train, South -> North
         lane_index=9,
         initial_direction=(0, -1),
         initial_angle=-90.0,
-        checkpoints=[]
+        checkpoints=[
+            Checkpoint(
+                position=(10, 14),
+                callback=lambda train: train.set_state(VehicleState.IN_INTERSECTION)
+            ),
+            Checkpoint(
+                position=(10, -4),
+                callback=lambda train: train.set_state(VehicleState.PASSED_INTERSECTION)
+            )
+        ]
     ),
 ]
 

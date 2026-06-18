@@ -1,12 +1,11 @@
+from collections.abc import Callable
+from src.environment.traffic.vehicle import Vehicle
+
 
 class Checkpoint:
-    def __init__(self, position, callback):
+    def __init__(self, position, callback: Callable[[Vehicle], None]):
         self.position = position
         self.callback = callback
 
-    def __call__(self, vehicle):
-        if self.position == vehicle.position():
-            self.callback(vehicle)
-            return True
-
-        return False
+    def acquire(self, vehicle):
+        self.callback(vehicle)

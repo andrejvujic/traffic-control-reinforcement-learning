@@ -1,4 +1,4 @@
-from src.game.constants import VEHICLE_SPAWN_POSITIONS, TRAIN_SPAWN_CONFIGRUATIONS, CELL_SIZE, TRAIN_LENGTH
+from src.game.constants import VEHICLE_SPAWN_POSITIONS, TRAIN_SPAWN_CONFIGURATIONS, CELL_SIZE, TRAIN_LENGTH
 from src.environment.traffic.train import Train
 from src.environment.traffic.vehicle_spawner import VehicleSpawner
 import random
@@ -49,4 +49,4 @@ class TrainSpawner(VehicleSpawner):
         return textures
 
     def get_random_spawn_configuration(self):
-        return random.choice(TRAIN_SPAWN_CONFIGRUATIONS)
+        return random.choice(TRAIN_SPAWN_CONFIGURATIONS)

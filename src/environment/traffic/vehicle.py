@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from src.environment.traffic.vehicle_state import VehicleState
 import pygame
 
 
@@ -21,6 +22,8 @@ class Vehicle(ABC):
 
         self.checkpoints = checkpoints
 
+        self.state = VehicleState.APPROACHING_INTERSECTION
+
     @abstractmethod
     def draw(self, surface: pygame.Surface):
         pass
@@ -38,13 +41,19 @@ class Vehicle(ABC):
     def set_angle(self, angle):
         self.angle = angle
 
+    def set_state(self, state):
+        self.state = state
+
     def move(self):
         dx, dy = self.direction
         self.x = self.x + dx
         self.y = self.y + dy
 
         for checkpoint in self.checkpoints:
-            checkpoint(self)
+            if self.did_reach_checkpoint(checkpoint):
+                checkpoint.acquire(self)
+
+                print(self.state)
 
     @abstractmethod
     def is_alive(self):
@@ -60,3 +69,15 @@ class Vehicle(ABC):
                 return True
 
         return False
+
+    def is_approaching_intersection(self):
+        return self.state == VehicleState.APPROACHING_INTERSECTION
+
+    def is_in_intersection(self):
+        return self.state == VehicleState.IN_INTERSECTION
+
+    def has_passed_intersection(self):
+        return self.state == VehicleState.PASSED_INTERSECTION
+
+    def did_reach_checkpoint(self, checkpoint):
+        return self.position() == checkpoint.position

@@ -7,8 +7,8 @@ class TrafficLightState(Enum):
 
 
 class TrafficLight:
-    def __init__(self, index):
-        self.index = index
+    def __init__(self, lane_index):
+        self.lane_index = lane_index
         self.state = TrafficLightState.RED
 
     def turn_green(self):

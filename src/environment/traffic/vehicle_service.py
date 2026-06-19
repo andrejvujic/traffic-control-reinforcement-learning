@@ -133,6 +133,7 @@ class VehicleService:
 
     def state(self):
         return [
+            *[int(traffic_light_state) for traffic_light_state in self.traffic_light_service.state()],
             *[self.__count_vehicles_approaching(lane_index) for lane_index in range(TOTAL_LANES)],
             *[self.__count_vehicles_in_intersection(lane_index) for lane_index in range(TOTAL_LANES)],
         ]
@@ -141,10 +142,11 @@ class VehicleService:
         reward = 0.0
 
         if self.has_collision():
-            reward = reward - 200.0
+            reward = reward - 100.0
 
         traffic_light_states = self.traffic_light_service.state()
         appoarching_vehicles_per_lane = [self.__count_vehicles_approaching(lane_index) for lane_index in range(TOTAL_LANES)]
+        passing_vehicles_per_lane = [self.__count_vehicles_in_intersection(lane_index) for lane_index in range(TOTAL_LANES)]
 
         for lane_index, (approaching_vehicle_count, is_traffic_light_passable) in enumerate(
             zip(
@@ -152,17 +154,31 @@ class VehicleService:
                 traffic_light_states
             )
         ):
-            if not is_traffic_light_passable:
+            if is_traffic_light_passable and not approaching_vehicle_count:
+                reward = reward - 5.0
+                continue
+
+            if is_traffic_light_passable and approaching_vehicle_count > 0:
+                reward = reward + 2.0
+                continue
+
+            if not is_traffic_light_passable and approaching_vehicle_count > 0:
                 if lane_index in CAR_LANES:
-                    reward = reward - 0.5 * approaching_vehicle_count
+                    reward = reward - 2.0 * approaching_vehicle_count
                     continue
 
-                reward = reward - 50.0
+                reward = reward - 5.0 * approaching_vehicle_count
 
-        passed_vehicles_per_lane = [self.__count_vehicles_passed(lane_index) for lane_index in range(TOTAL_LANES)]
-        passed_vehicles_total = sum(passed_vehicles_per_lane)
+        for lane_index, (passing_vehicle_count, is_traffic_light_passable) in enumerate(
+            zip(
+                passing_vehicles_per_lane,
+                traffic_light_states
+            )
+        ):
+            if not is_traffic_light_passable:
+                reward = reward - 8.0 * passing_vehicle_count
 
-        reward = reward + passed_vehicles_total * 10.0
+        reward = reward + self.traffic_light_service.evaluate_state()
 
         return reward
 

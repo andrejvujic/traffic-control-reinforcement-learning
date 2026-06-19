@@ -1,1 +1,4 @@
+matplotlib==3.11.0
+numpy==2.4.6
 pygame-ce==2.5.7
+torch==2.12.1

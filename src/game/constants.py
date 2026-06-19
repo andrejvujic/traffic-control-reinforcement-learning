@@ -11,7 +11,7 @@ TOTAL_LANES = 10
 CAR_LANES = range(0, 8)
 TRAIN_LANES = range(8, 10)
 
-MAX_TICKS_PER_EPISODE = 10000
+MAX_TICKS_PER_EPISODE = 1000
 
 SCREEN_WIDTH = CELL_SIZE * COLUMNS
 SCREEN_HEIGHT = CELL_SIZE * ROWS
@@ -405,20 +405,29 @@ TRAIN_SPAWN_CONFIGURATIONS = [
     ),
 ]
 
-"""
-CAR_MOVEMENT_INTERVAL = 4
-CAR_SPAWN_INTERVAL = 8
-CAR_SPAWN_PROBABILITY = 0.75
+COMPATIBLE_TRAFFIC_LIGHT_GROUPS = [
+    {0, 1},      # West -> East Left + Forward/Right
+    {2, 3},      # South -> North Left + Forward/Right
+    {4, 5},      # East -> West Left + Forward/Right
+    {6, 7},      # North -> South Left + Forward/Right
 
-TRAIN_MOVEMENT_INTERVAL = 5
-TRAIN_SPAWN_INTERVAL = 256
-TRAIN_SPAWN_PROBABILITY = 0.25
-"""
+    {1, 5},      # West -> East Forward/Right + East -> West Forward/Right
+    {3, 7},      # South -> North Forward/Right + North -> South Forward/Right
+
+    {1, 6},      # West -> East Forward/Right + North -> South Left
+    {3, 0},      # South -> North Forward/Right + West -> East Left
+    {5, 2},      # East -> West Forward/Right + South -> North Left
+    {7, 4},      # North -> South Forward/Right + East -> West Left
+
+    {8},
+    {9},
+]
+
 
 CAR_MOVEMENT_INTERVAL = 1
-CAR_SPAWN_INTERVAL = 3
-CAR_SPAWN_PROBABILITY = 0.6
+CAR_SPAWN_INTERVAL = 4
+CAR_SPAWN_PROBABILITY = 0.75
 
 TRAIN_MOVEMENT_INTERVAL = 1
-TRAIN_SPAWN_INTERVAL = 48
-TRAIN_SPAWN_PROBABILITY = 0.25
+TRAIN_SPAWN_INTERVAL = 64
+TRAIN_SPAWN_PROBABILITY = 0.4

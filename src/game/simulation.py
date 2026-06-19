@@ -1,12 +1,13 @@
 import pygame
 import math
 
-from src.game.constants import SCREEN_WIDTH, SCREEN_HEIGHT, CELL_SIZE, TRAFFIC_LIGHT_POSITIONS
+from src.game.constants import SCREEN_WIDTH, SCREEN_HEIGHT, CELL_SIZE, TRAFFIC_LIGHT_POSITIONS, TOTAL_LANES
 from src.game.map import Map
 
 from src.environment.traffic.traffic_light_service import TrafficLightService
 from src.environment.traffic.vehicle_service import VehicleService
 from src.environment.agents.basic.basic_agent import BasicAgent
+from src.environment.agents.dqn.dqn_agent import DQNAgent
 
 
 class Game:
@@ -24,7 +25,12 @@ class Game:
         self.vechicle_service = VehicleService(traffic_light_service=self.traffic_light_service)
         self.map = Map()
 
-        self.agent = BasicAgent()
+        self.agent = DQNAgent(
+            in_features=30,
+            out_features=11
+        )
+
+        self.agent.load()
 
     def run(self):
         running = True
@@ -51,12 +57,14 @@ class Game:
 
             pygame.display.flip()
 
-            self.clock.tick(60)
+            self.clock.tick(10)
 
-            action = self.agent.next_action(current_state)
-            self.traffic_light_service.set_state(action)
+            action, _ = self.agent.next_action(current_state)
+            if action < TOTAL_LANES:
+                self.traffic_light_service.toggle(action)
 
-            next_state, reward, terminated, truncated = self.vechicle_service.update()
+            new_state, reward, terminated, truncated = self.vechicle_service.update()
+            self.agent.remember(current_state, action, new_state, reward, terminated)
 
             episode_length = episode_length + 1
 
@@ -64,11 +72,10 @@ class Game:
                 self.vechicle_service.reset()
                 self.traffic_light_service.reset()
 
-                next_state = self.vechicle_service.state()
-
+                new_state = self.vechicle_service.state()
                 episode_length = 0
 
-            current_state = next_state
+            current_state = new_state
 
     def handle_traffic_light_click(self, click_position):
         click_x, click_y = click_position

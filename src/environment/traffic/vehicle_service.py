@@ -4,7 +4,7 @@ from src.environment.traffic.train import Train
 from src.environment.traffic.train_spawner import TrainSpawner
 from src.environment.traffic.traffic_light_service import TrafficLightService
 
-from src.game.constants import MAX_TICKS_PER_EPISODE
+from src.game.constants import TRAFFIC_LIGHT_PHASES, MAX_TICKS_PER_EPISODE
 from src.game.constants import VEHICLE_STOP_POSITIONS, CAR_LANES, TOTAL_LANES
 from src.game.constants import CAR_MOVEMENT_INTERVAL, CAR_SPAWN_INTERVAL, CAR_SPAWN_PROBABILITY
 from src.game.constants import TRAIN_MOVEMENT_INTERVAL, TRAIN_SPAWN_INTERVAL, TRAIN_SPAWN_PROBABILITY
@@ -30,6 +30,9 @@ class VehicleService:
         self.trains: list[Train] = []
         self.train_spawner = TrainSpawner(assets_directory='assets/trains')
 
+        self.cars_passed_this_tick = 0
+        self.trains_passed_this_tick = 0
+
     def reset(self):
         self.cars = []
         self.trains = []
@@ -41,8 +44,13 @@ class VehicleService:
         self.total_trains_passed = 0
         self.total_waiting_time_trains = 0
 
+        self.cars_passed_this_tick = 0
+        self.trains_passed_this_tick = 0
+
     def update(self):
         self.ticks = self.ticks + 1
+        self.cars_passed_this_tick = 0
+        self.trains_passed_this_tick = 0
 
         if self.ticks % CAR_SPAWN_INTERVAL == 0 and random_bool(CAR_SPAWN_PROBABILITY):
             self.cars.append(
@@ -106,10 +114,12 @@ class VehicleService:
             if not vehicle.on_screen():
                 if isinstance(vehicle, Car):
                     self.total_cars_passed = self.total_cars_passed + 1
+                    self.cars_passed_this_tick = self.cars_passed_this_tick + 1
                     self.total_waiting_time_cars = self.total_waiting_time_cars + vehicle.steps_waiting
 
                 if isinstance(vehicle, Train):
                     self.total_trains_passed = self.total_trains_passed + 1
+                    self.trains_passed_this_tick = self.trains_passed_this_tick + 1
                     self.total_waiting_time_trains = self.total_waiting_time_trains + vehicle.steps_waiting
 
         self.cars = [car for car in self.cars if car.on_screen()]
@@ -133,7 +143,7 @@ class VehicleService:
 
     def state(self):
         return [
-            *[int(traffic_light_state) for traffic_light_state in self.traffic_light_service.state()],
+            *self.traffic_light_service.state(),
             *[self.__count_vehicles_approaching(lane_index) for lane_index in range(TOTAL_LANES)],
             *[self.__count_vehicles_in_intersection(lane_index) for lane_index in range(TOTAL_LANES)],
         ]
@@ -142,7 +152,9 @@ class VehicleService:
         reward = 0.0
 
         if self.has_collision():
-            reward = reward - 100.0
+            reward = reward - 1000.0
+        else:
+            reward = reward + 0.25
 
         traffic_light_states = self.traffic_light_service.state()
         appoarching_vehicles_per_lane = [self.__count_vehicles_approaching(lane_index) for lane_index in range(TOTAL_LANES)]
@@ -155,19 +167,19 @@ class VehicleService:
             )
         ):
             if is_traffic_light_passable and not approaching_vehicle_count:
-                reward = reward - 5.0
+                reward = reward - 10.0
                 continue
 
             if is_traffic_light_passable and approaching_vehicle_count > 0:
-                reward = reward + 2.0
+                reward = reward + 0.25 * approaching_vehicle_count
                 continue
 
             if not is_traffic_light_passable and approaching_vehicle_count > 0:
                 if lane_index in CAR_LANES:
-                    reward = reward - 2.0 * approaching_vehicle_count
+                    reward = reward - 4.0 * approaching_vehicle_count
                     continue
 
-                reward = reward - 5.0 * approaching_vehicle_count
+                reward = reward - 96.0 * approaching_vehicle_count
 
         for lane_index, (passing_vehicle_count, is_traffic_light_passable) in enumerate(
             zip(
@@ -175,10 +187,24 @@ class VehicleService:
                 traffic_light_states
             )
         ):
-            if not is_traffic_light_passable:
-                reward = reward - 8.0 * passing_vehicle_count
+            if is_traffic_light_passable:
+                for other_lane_index in range(TOTAL_LANES):
+                    if other_lane_index == lane_index or {other_lane_index, lane_index} in TRAFFIC_LIGHT_PHASES:
+                        continue
 
-        reward = reward + self.traffic_light_service.evaluate_state()
+                    reward = reward - passing_vehicles_per_lane[other_lane_index] * 8.0
+
+            if not is_traffic_light_passable and passing_vehicle_count > 0:
+                reward = reward - 12.0 * passing_vehicle_count
+
+            if is_traffic_light_passable and passing_vehicle_count > 0:
+                if lane_index in CAR_LANES:
+                    reward = reward + 3.0 * passing_vehicle_count
+                else:
+                    reward = reward + 8.0 * passing_vehicle_count
+
+        reward = reward + 8.0 * self.cars_passed_this_tick
+        reward = reward + 50.0 * self.trains_passed_this_tick
 
         return reward
 

@@ -24,7 +24,7 @@ class ReplayBuffer:
         return DataLoader(
             TensorDataset(
                 T.tensor(self.states, dtype=T.float32),
-                T.tensor(self.actions, dtype=T.int32),
+                T.tensor(self.actions, dtype=T.long),
                 T.tensor(self.new_states, dtype=T.float32),
                 T.tensor(self.rewards, dtype=T.float32),
                 T.tensor(self.terminated_flags, dtype=T.float32)
@@ -32,3 +32,6 @@ class ReplayBuffer:
             batch_size=self.batch_size,
             shuffle=True,
         )
+
+    def __len__(self):
+        return len(self.states)

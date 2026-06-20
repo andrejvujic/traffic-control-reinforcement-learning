@@ -7,16 +7,16 @@ class Network(nn.Module):
         self.network = nn.Sequential(
             nn.Linear(
                 in_features,
-                64
+                128
             ),
             nn.ReLU(),
             nn.Linear(
-                64,
-                64
+                128,
+                128
             ),
             nn.ReLU(),
             nn.Linear(
-                64,
+                128,
                 out_features
             )
         )

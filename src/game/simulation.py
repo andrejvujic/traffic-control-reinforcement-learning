@@ -1,7 +1,8 @@
 import pygame
 import math
 
-from src.game.constants import SCREEN_WIDTH, SCREEN_HEIGHT, CELL_SIZE, TRAFFIC_LIGHT_POSITIONS, TOTAL_LANES
+from src.game.constants import SCREEN_WIDTH, SCREEN_HEIGHT, CELL_SIZE, TRAFFIC_LIGHT_POSITIONS
+from src.game.constants import TRAFFIC_LIGHT_PHASES
 from src.game.map import Map
 
 from src.environment.traffic.traffic_light_service import TrafficLightService
@@ -27,7 +28,7 @@ class Game:
 
         self.agent = DQNAgent(
             in_features=30,
-            out_features=11
+            out_features=len(TRAFFIC_LIGHT_PHASES) + 1
         )
 
         self.agent.load()
@@ -57,11 +58,13 @@ class Game:
 
             pygame.display.flip()
 
-            self.clock.tick(10)
+            self.clock.tick(60)
 
             action, _ = self.agent.next_action(current_state)
-            if action < TOTAL_LANES:
-                self.traffic_light_service.toggle(action)
+            if action < len(TRAFFIC_LIGHT_PHASES):
+                self.traffic_light_service.apply_phase(action)
+            else:
+                self.traffic_light_service.turn_all_red()
 
             new_state, reward, terminated, truncated = self.vechicle_service.update()
             self.agent.remember(current_state, action, new_state, reward, terminated)

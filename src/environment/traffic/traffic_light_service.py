@@ -1,5 +1,6 @@
 from src.environment.traffic.traffic_light import TrafficLight
-from src.game.constants import COMPATIBLE_TRAFFIC_LIGHT_GROUPS, TOTAL_LANES, TRAFFIC_LIGHT_POSITIONS, CELL_SIZE
+from src.game.constants import TOTAL_LANES, TRAFFIC_LIGHT_POSITIONS, CELL_SIZE
+from src.game.constants import TRAFFIC_LIGHT_PHASES
 from src.game.colors import TL_ON_COLOR, TL_OFF_COLOR
 import pygame
 
@@ -20,6 +21,15 @@ class TrafficLightService:
 
     def turn_all_red(self):
         for traffic_light in self.traffic_lights:
+            traffic_light.turn_red()
+
+    def apply_phase(self, phase_index):
+        active_lanes = TRAFFIC_LIGHT_PHASES[phase_index]
+        for traffic_light in self.traffic_lights:
+            if traffic_light.lane_index in active_lanes:
+                traffic_light.turn_green()
+                continue
+
             traffic_light.turn_red()
 
     def toggle(self, traffic_light_index):
@@ -43,28 +53,6 @@ class TrafficLightService:
                 continue
 
             self.traffic_lights[index].turn_red()
-
-    def evaluate_state(self):
-        active_lanes = self.__active_lane_indices()
-        if not active_lanes:
-            return -5.0
-
-        if len(active_lanes) == 1:
-            return -1.0
-
-        if not self.__are_active_lanes_compatible(active_lanes):
-            return -30.0
-
-        return 5.0 * len(active_lanes)
-
-    def __active_lane_indices(self):
-        return {traffic_light.lane_index for traffic_light in self.traffic_lights if traffic_light.is_passable()}
-
-    def __are_active_lanes_compatible(self, active_lanes):
-        return any(
-            active_lanes.issubset(compatible_lanes)
-            for compatible_lanes in COMPATIBLE_TRAFFIC_LIGHT_GROUPS
-        )
 
     def reset(self):
         self.previous_action = None

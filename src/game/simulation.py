@@ -31,7 +31,7 @@ class Game:
             out_features=len(TRAFFIC_LIGHT_PHASES) + 1
         )
 
-        self.agent.load()
+        self.agent.load('training_output/dqn/1782077128/model.pt')
 
     def run(self):
         running = True

@@ -14,6 +14,8 @@ import pygame
 
 
 class VehicleService:
+    VEHICLE_COUNT_NORMALIZER = 10
+
     def __init__(self, traffic_light_service: TrafficLightService):
         self.traffic_light_service = traffic_light_service
         self.ticks = 0
@@ -83,7 +85,7 @@ class VehicleService:
 
         self.__remove_dead_vehicles()
 
-        return self.state(), self.evaluate_state(), self.has_collision(), self.ticks > MAX_TICKS_PER_EPISODE
+        return self.state(), self.evaluate_state(), self.has_collision(), self.ticks >= MAX_TICKS_PER_EPISODE
 
     def can_car_move(self, car: Car):
         stop_position = VEHICLE_STOP_POSITIONS[car.lane_index]
@@ -144,17 +146,28 @@ class VehicleService:
     def state(self):
         return [
             *self.traffic_light_service.state(),
-            *[self.__count_vehicles_approaching(lane_index) for lane_index in range(TOTAL_LANES)],
-            *[self.__count_vehicles_in_intersection(lane_index) for lane_index in range(TOTAL_LANES)],
+            *[
+                self.__normalize_vehicle_count(
+                    self.__count_vehicles_approaching(lane_index)
+                )
+                for lane_index in range(TOTAL_LANES)
+            ],
+            *[
+                self.__normalize_vehicle_count(
+                    self.__count_vehicles_in_intersection(lane_index)
+                )
+                for lane_index in range(TOTAL_LANES)
+            ],
         ]
+
+    def __normalize_vehicle_count(self, vehicle_count):
+        return min(vehicle_count, self.VEHICLE_COUNT_NORMALIZER) / self.VEHICLE_COUNT_NORMALIZER
 
     def evaluate_state(self):
         reward = 0.0
 
         if self.has_collision():
             reward = reward - 1000.0
-        else:
-            reward = reward + 0.25
 
         traffic_light_states = self.traffic_light_service.state()
         appoarching_vehicles_per_lane = [self.__count_vehicles_approaching(lane_index) for lane_index in range(TOTAL_LANES)]
@@ -166,20 +179,22 @@ class VehicleService:
                 traffic_light_states
             )
         ):
-            if is_traffic_light_passable and not approaching_vehicle_count:
-                reward = reward - 10.0
+            passing_vehicle_count = passing_vehicles_per_lane[lane_index]
+
+            if is_traffic_light_passable and not approaching_vehicle_count and not passing_vehicle_count:
+                reward = reward - 8.0
                 continue
 
             if is_traffic_light_passable and approaching_vehicle_count > 0:
-                reward = reward + 0.25 * approaching_vehicle_count
+                reward = reward + 1.5 * approaching_vehicle_count
                 continue
 
             if not is_traffic_light_passable and approaching_vehicle_count > 0:
                 if lane_index in CAR_LANES:
-                    reward = reward - 4.0 * approaching_vehicle_count
+                    reward = reward - 2.0 * approaching_vehicle_count
                     continue
 
-                reward = reward - 96.0 * approaching_vehicle_count
+                reward = reward - 16.0 * approaching_vehicle_count
 
         for lane_index, (passing_vehicle_count, is_traffic_light_passable) in enumerate(
             zip(
@@ -187,24 +202,17 @@ class VehicleService:
                 traffic_light_states
             )
         ):
-            if is_traffic_light_passable:
-                for other_lane_index in range(TOTAL_LANES):
-                    if other_lane_index == lane_index or {other_lane_index, lane_index} in TRAFFIC_LIGHT_PHASES:
-                        continue
-
-                    reward = reward - passing_vehicles_per_lane[other_lane_index] * 8.0
-
             if not is_traffic_light_passable and passing_vehicle_count > 0:
-                reward = reward - 12.0 * passing_vehicle_count
+                reward = reward - 15.0 * passing_vehicle_count
 
             if is_traffic_light_passable and passing_vehicle_count > 0:
                 if lane_index in CAR_LANES:
-                    reward = reward + 3.0 * passing_vehicle_count
+                    reward = reward + 2.0 * passing_vehicle_count
                 else:
-                    reward = reward + 8.0 * passing_vehicle_count
+                    reward = reward + 5.0 * passing_vehicle_count
 
-        reward = reward + 8.0 * self.cars_passed_this_tick
-        reward = reward + 50.0 * self.trains_passed_this_tick
+        reward = reward + 15.0 * self.cars_passed_this_tick
+        reward = reward + 100.0 * self.trains_passed_this_tick
 
         return reward
 

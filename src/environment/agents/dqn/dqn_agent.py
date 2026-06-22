@@ -15,12 +15,12 @@ class DQNAgent:
         self,
         in_features,
         out_features,
-        memory_size=4096,
-        batch_size=32,
+        memory_size=8192,
+        batch_size=64,
         batch_count=1,
         alpha=0.0002,
-        gamma=0.9,
-        epochs=1
+        gamma=0.95,
+        epochs=1,
     ):
         self.policy_network = Network(
             in_features,
@@ -95,15 +95,15 @@ class DQNAgent:
             loss.backward()
             self.optimizer.step()
 
-    def save(self):
+    def save(self, path):
         T.save(
             self.policy_network.state_dict(),
-            'dqn.pt'
+            path
         )
 
-    def load(self):
+    def load(self, path):
         self.policy_network.load_state_dict(
-            T.load('dqn.pt')
+            T.load(path)
         )
 
     ACTIONS = range(len(TRAFFIC_LIGHT_PHASES) + 1)

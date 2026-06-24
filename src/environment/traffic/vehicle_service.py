@@ -14,7 +14,7 @@ import pygame
 
 
 class VehicleService:
-    VEHICLE_COUNT_NORMALIZER = 10
+    VEHICLE_COUNT_NORMALIZER = 8
 
     def __init__(self, traffic_light_service: TrafficLightService):
         self.traffic_light_service = traffic_light_service
@@ -117,12 +117,10 @@ class VehicleService:
                 if isinstance(vehicle, Car):
                     self.total_cars_passed = self.total_cars_passed + 1
                     self.cars_passed_this_tick = self.cars_passed_this_tick + 1
-                    self.total_waiting_time_cars = self.total_waiting_time_cars + vehicle.steps_waiting
 
                 if isinstance(vehicle, Train):
                     self.total_trains_passed = self.total_trains_passed + 1
                     self.trains_passed_this_tick = self.trains_passed_this_tick + 1
-                    self.total_waiting_time_trains = self.total_waiting_time_trains + vehicle.steps_waiting
 
         self.cars = [car for car in self.cars if car.on_screen()]
         self.trains = [train for train in self.trains if train.on_screen()]
@@ -218,13 +216,13 @@ class VehicleService:
 
     def average_waiting_time_for_cars(self):
         if self.total_cars_passed > 0:
-            return self.total_waiting_time_cars / self.total_cars_passed
+            return sum([car.steps_waiting for car in self.cars]) / self.total_cars_passed
 
         return 0.0
 
     def average_waiting_time_for_trains(self):
         if self.total_trains_passed > 0:
-            return self.total_waiting_time_trains / self.total_trains_passed
+            return sum([train.steps_waiting for train in self.trains]) / self.total_trains_passed
 
         return 0.0
 

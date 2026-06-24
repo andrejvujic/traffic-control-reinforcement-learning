@@ -18,8 +18,8 @@ class DQNAgent:
         memory_size=8192,
         batch_size=64,
         batch_count=1,
-        alpha=0.0002,
-        gamma=0.95,
+        alpha=0.0003,
+        gamma=0.99,
         epochs=1,
     ):
         self.policy_network = Network(

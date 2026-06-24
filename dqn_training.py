@@ -29,12 +29,12 @@ os.makedirs(
     exist_ok=True
 )
 
-TARGET_GAMES = 5000
-EPSILON_DECAY_GAMES = 4500
+TARGET_GAMES = 7000
+EPSILON_DECAY_GAMES = 5000
 START_EPSILON = 1.0
 END_EPSILON = 0.0
 
-SYNC_INTERVAL = 512
+SYNC_INTERVAL = 4096
 LOG_INTERVAL = 100
 
 HEADLESS = True
@@ -63,20 +63,20 @@ def calculate_epsilon(game_index):
 
 
 def save_history_plot(file_name, history, y_label, title):
-    figure = plt.figure()
+    figure = plt.figure(figsize=(12, 6))
+    x_values = list(range(1, len(history) + 1))
 
     plt.plot(
-        range(
-            len(history)
-        ),
-        history
+        x_values,
+        history,
     )
+
     plt.xlabel('Game')
     plt.ylabel(y_label)
     plt.title(title)
 
     figure.savefig(
-        os.path.join(output_path, file_name)
+        os.path.join(output_path, file_name),
     )
     plt.close(figure)
 
@@ -165,10 +165,6 @@ for game_index in range(TARGET_GAMES):
     current_state = vehicle_service.state()
 
     while not terminated_flag and not truncated_flag:
-        ticks = ticks + 1
-        ticks_since_sync = ticks_since_sync + 1
-        ticks_since_update = ticks_since_update + 1
-
         action, random_action_taken = agent.next_action(
             current_state,
             epsilon=epsilon
@@ -181,6 +177,14 @@ for game_index in range(TARGET_GAMES):
 
         new_state, reward, terminated_flag, truncated_flag = vehicle_service.update()
         total_reward = total_reward + reward
+
+        agent.remember(
+            current_state,
+            action,
+            new_state,
+            reward,
+            terminated_flag
+        )
 
         if not HEADLESS:
             for event in pygame.event.get():
@@ -195,14 +199,6 @@ for game_index in range(TARGET_GAMES):
             pygame.display.flip()
             clock.tick()
 
-        agent.remember(
-            current_state,
-            action,
-            new_state,
-            reward,
-            terminated_flag
-        )
-
         current_state = new_state
 
         agent.learn()
@@ -210,6 +206,10 @@ for game_index in range(TARGET_GAMES):
         if ticks_since_sync >= SYNC_INTERVAL:
             ticks_since_sync = 0
             agent.sync_networks()
+
+        ticks = ticks + 1
+        ticks_since_sync = ticks_since_sync + 1
+        ticks_since_update = ticks_since_update + 1
 
     flow_rate_history.append(vehicle_service.flow_rate())
     car_waiting_time_history.append(vehicle_service.average_waiting_time_for_cars())

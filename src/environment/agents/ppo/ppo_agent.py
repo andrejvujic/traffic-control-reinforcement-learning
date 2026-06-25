@@ -66,14 +66,18 @@ class PPOAgent:
 
         return advantages
 
-    def next_action(self, state):
+    def next_action(self, state, sample=True):
         with T.no_grad():
             state_tensor = T.tensor(state, dtype=T.float32)
             logits = self.actor(state_tensor)
             dist = Categorical(logits=logits)
-            action = dist.sample()
 
-        return action.item(), dist.log_prob(action).item()
+            if sample:
+                action = dist.sample()
+                return action.item(), dist.log_prob(action).item()
+
+            action = logits.argmax()
+            return action.item(), dist.log_prob(action).item()
 
     def evaluate_state(self, state):
         if not isinstance(state, T.Tensor):

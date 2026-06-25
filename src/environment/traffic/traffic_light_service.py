@@ -12,7 +12,6 @@ class TrafficLightService:
         ]
 
         self.previous_state = None
-        self.did_repeat_action = False
 
     def turn_green(self, traffic_light_index):
         traffic_light = self.traffic_lights[traffic_light_index]
@@ -23,15 +22,14 @@ class TrafficLightService:
         traffic_light.turn_red()
 
     def turn_all_red(self):
-        current_state = self.state()
-        self.did_repeat_action = not any(current_state)
+        self.previous_state = self.state()
 
         for traffic_light in self.traffic_lights:
             traffic_light.turn_red()
 
+    def apply_phase(self, phase_index):
         self.previous_state = self.state()
 
-    def apply_phase(self, phase_index):
         active_lanes = TRAFFIC_LIGHT_PHASES[phase_index]
         for traffic_light in self.traffic_lights:
             if traffic_light.lane_index in active_lanes:
@@ -40,12 +38,13 @@ class TrafficLightService:
 
             traffic_light.turn_red()
 
-        current_state = self.state()
-        self.did_repeat_action = all([
-            current_state == previous_state for
-            current_state, previous_state in zip(current_state, self.previous_state)
-        ]) if self.previous_state else False
-        self.previous_state = current_state
+    def previous_action_repeated(self):
+        return all([
+            previously_passable == now_passable for previously_passable, now_passable in zip(
+                self.previous_state,
+                self.state()
+            )
+        ])
 
     def toggle(self, traffic_light_index):
         if self.is_passable(traffic_light_index):

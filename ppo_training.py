@@ -199,3 +199,4 @@ for game_index in range(TARGET_GAMES):
 training_duration = time.time() - training_start_time
 training_log(f'Training Done | Took ({training_duration / 3600.0:.1f} hours) | Ticks: {total_ticks}')
 save_training_checkpoint()
+training_log(f'Model Location -> \'{model_path}\'')

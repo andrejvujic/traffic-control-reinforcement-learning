@@ -34,7 +34,7 @@ class Game:
         # self.dqn_agent.load('training_output/dqn/1782341084/model.pt')
 
         self.ppo_agent = PPOAgent()
-        self.ppo_agent.load('training_output/ppo/1782384697/model.pt')
+        self.ppo_agent.load('training_output/ppo/1782396035/model.pt')
 
     def run(self):
         running = True
@@ -64,7 +64,7 @@ class Game:
             self.clock.tick(60)
 
             # action, _ = self.dqn_agent.next_action(current_state)
-            action, _ = self.ppo_agent.next_action(current_state)
+            action, _ = self.ppo_agent.next_action(current_state, sample=False)
 
             if action < len(TRAFFIC_LIGHT_PHASES):
                 self.traffic_light_service.apply_phase(action)

@@ -215,8 +215,8 @@ for game_index in range(TARGET_GAMES):
         ticks_since_update = ticks_since_update + 1
 
     flow_rate_history.append(vehicle_service.flow_rate())
-    car_waiting_time_history.append(vehicle_service.average_waiting_time_for_cars())
-    train_waiting_time_history.append(vehicle_service.average_waiting_time_for_trains())
+    car_waiting_time_history.append(vehicle_service.average_ticks_waiting_cars())
+    train_waiting_time_history.append(vehicle_service.average_ticks_waiting_trains())
     total_cars_passed_history.append(vehicle_service.total_cars_passed)
     total_trains_passed_history.append(vehicle_service.total_trains_passed)
     total_reward_history.append(total_reward)

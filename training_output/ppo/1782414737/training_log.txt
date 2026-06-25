@@ -1,0 +1,5 @@
+Game Done ->     1 / 10000 | Training Progress -> 0.01%
+Game Done ->   100 / 10000 | Training Progress -> 1.00%
+Game Done ->   200 / 10000 | Training Progress -> 2.00%
+Game Done ->   300 / 10000 | Training Progress -> 3.00%
+Game Done ->   400 / 10000 | Training Progress -> 4.00%

@@ -26,7 +26,7 @@ class Vehicle(ABC):
 
         self.is_off_screen = False
 
-        self.steps_waiting = 0
+        self.ticks_waiting = 0
 
     @abstractmethod
     def draw(self, surface: pygame.Surface):
@@ -64,7 +64,7 @@ class Vehicle(ABC):
         self.is_off_screen = True
 
     def mark_waiting(self):
-        self.steps_waiting = self.steps_waiting + 1
+        self.ticks_waiting = self.ticks_waiting + 1
 
     @abstractmethod
     def collides_with(self, other):

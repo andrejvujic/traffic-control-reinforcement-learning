@@ -9,6 +9,7 @@ from src.environment.traffic.traffic_light_service import TrafficLightService
 from src.environment.traffic.vehicle_service import VehicleService
 from src.environment.agents.basic.basic_agent import BasicAgent
 from src.environment.agents.dqn.dqn_agent import DQNAgent
+from src.environment.agents.ppo.ppo_agent import PPOAgent
 
 
 class Game:
@@ -26,12 +27,14 @@ class Game:
         self.vechicle_service = VehicleService(traffic_light_service=self.traffic_light_service)
         self.map = Map()
 
-        self.agent = DQNAgent(
+        self.dqn_agent = DQNAgent(
             in_features=30,
             out_features=len(TRAFFIC_LIGHT_PHASES) + 1
         )
+        # self.dqn_agent.load('training_output/dqn/1782341084/model.pt')
 
-        self.agent.load('training_output/dqn/1782077128/model.pt')
+        self.ppo_agent = PPOAgent()
+        self.ppo_agent.load('training_output/ppo/1782384697/model.pt')
 
     def run(self):
         running = True
@@ -60,14 +63,15 @@ class Game:
 
             self.clock.tick(60)
 
-            action, _ = self.agent.next_action(current_state)
+            # action, _ = self.dqn_agent.next_action(current_state)
+            action, _ = self.ppo_agent.next_action(current_state)
+
             if action < len(TRAFFIC_LIGHT_PHASES):
                 self.traffic_light_service.apply_phase(action)
             else:
                 self.traffic_light_service.turn_all_red()
 
-            new_state, reward, terminated, truncated = self.vechicle_service.update()
-            self.agent.remember(current_state, action, new_state, reward, terminated)
+            new_state, _, terminated, truncated = self.vechicle_service.update()
 
             episode_length = episode_length + 1
 

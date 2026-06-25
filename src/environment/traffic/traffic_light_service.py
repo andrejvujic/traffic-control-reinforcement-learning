@@ -11,6 +11,9 @@ class TrafficLightService:
             TrafficLight(lane_index=lane_index) for lane_index in range(TOTAL_LANES)
         ]
 
+        self.previous_state = None
+        self.did_repeat_action = False
+
     def turn_green(self, traffic_light_index):
         traffic_light = self.traffic_lights[traffic_light_index]
         traffic_light.turn_green()
@@ -20,8 +23,13 @@ class TrafficLightService:
         traffic_light.turn_red()
 
     def turn_all_red(self):
+        current_state = self.state()
+        self.did_repeat_action = not any(current_state)
+
         for traffic_light in self.traffic_lights:
             traffic_light.turn_red()
+
+        self.previous_state = self.state()
 
     def apply_phase(self, phase_index):
         active_lanes = TRAFFIC_LIGHT_PHASES[phase_index]
@@ -31,6 +39,13 @@ class TrafficLightService:
                 continue
 
             traffic_light.turn_red()
+
+        current_state = self.state()
+        self.did_repeat_action = all([
+            current_state == previous_state for
+            current_state, previous_state in zip(current_state, self.previous_state)
+        ]) if self.previous_state else False
+        self.previous_state = current_state
 
     def toggle(self, traffic_light_index):
         if self.is_passable(traffic_light_index):
@@ -55,8 +70,6 @@ class TrafficLightService:
             self.traffic_lights[index].turn_red()
 
     def reset(self):
-        self.previous_action = None
-        self.repeated_action = False
         self.turn_all_red()
 
     def draw(self, surface: pygame.Surface):

@@ -14,7 +14,7 @@ import pygame
 
 
 class VehicleService:
-    VEHICLE_COUNT_NORMALIZER = 8
+    VEHICLE_COUNT_NORMALIZER = 15
 
     def __init__(self, traffic_light_service: TrafficLightService):
         self.traffic_light_service = traffic_light_service
@@ -34,6 +34,9 @@ class VehicleService:
 
         self.cars_passed_this_tick = 0
         self.trains_passed_this_tick = 0
+
+        self.previous_action = None
+        self.did_repeat_action = False
 
     def reset(self):
         self.cars = []
@@ -156,6 +159,12 @@ class VehicleService:
                 )
                 for lane_index in range(TOTAL_LANES)
             ],
+            *[
+                self.__normalize_vehicle_count(
+                    self.__count_vehicles_passed(lane_index)
+                )
+                for lane_index in range(TOTAL_LANES)
+            ],
         ]
 
     def __normalize_vehicle_count(self, vehicle_count):
@@ -164,8 +173,13 @@ class VehicleService:
     def evaluate_state(self):
         reward = 0.0
 
+        reward = reward + 0.01
+
+        if not self.traffic_light_service.did_repeat_action:
+            reward = reward - 0.05
+
         if self.has_collision():
-            reward = reward - 1000.0
+            reward = reward - 300.0
 
         traffic_light_states = self.traffic_light_service.state()
         appoarching_vehicles_per_lane = [self.__count_vehicles_approaching(lane_index) for lane_index in range(TOTAL_LANES)]
@@ -177,22 +191,18 @@ class VehicleService:
                 traffic_light_states
             )
         ):
-            passing_vehicle_count = passing_vehicles_per_lane[lane_index]
-
-            if is_traffic_light_passable and not approaching_vehicle_count and not passing_vehicle_count:
-                reward = reward - 8.0
-                continue
-
+            """
             if is_traffic_light_passable and approaching_vehicle_count > 0:
-                reward = reward + 1.5 * approaching_vehicle_count
+                reward = reward + 0.25 * approaching_vehicle_count
                 continue
+            """
 
             if not is_traffic_light_passable and approaching_vehicle_count > 0:
                 if lane_index in CAR_LANES:
-                    reward = reward - 2.0 * approaching_vehicle_count
+                    reward = reward - 0.1 * approaching_vehicle_count
                     continue
 
-                reward = reward - 16.0 * approaching_vehicle_count
+                reward = reward - 1.0 * approaching_vehicle_count
 
         for lane_index, (passing_vehicle_count, is_traffic_light_passable) in enumerate(
             zip(
@@ -200,17 +210,22 @@ class VehicleService:
                 traffic_light_states
             )
         ):
-            if not is_traffic_light_passable and passing_vehicle_count > 0:
-                reward = reward - 15.0 * passing_vehicle_count
+            if not passing_vehicle_count:
+                continue
 
-            if is_traffic_light_passable and passing_vehicle_count > 0:
-                if lane_index in CAR_LANES:
-                    reward = reward + 2.0 * passing_vehicle_count
-                else:
-                    reward = reward + 5.0 * passing_vehicle_count
+            reward = reward + 0.025 * passing_vehicle_count
 
-        reward = reward + 15.0 * self.cars_passed_this_tick
-        reward = reward + 100.0 * self.trains_passed_this_tick
+            if not is_traffic_light_passable:
+                reward = reward - 1.0 * passing_vehicle_count
+                continue
+
+            if lane_index in CAR_LANES:
+                reward = reward + 0.5 * passing_vehicle_count
+            else:
+                reward = reward + 3.0 * passing_vehicle_count
+
+        reward = reward + 0.5 * self.cars_passed_this_tick
+        reward = reward + 2.0 * self.trains_passed_this_tick
 
         return reward
 

@@ -11,11 +11,15 @@ import time
 import os
 
 pygame.display.init()
-surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+surface = pygame.display.set_mode(
+    (SCREEN_WIDTH, SCREEN_HEIGHT)
+)
 clock = pygame.time.Clock()
 
 traffic_light_service = TrafficLightService()
-vehicle_service = VehicleService(traffic_light_service=traffic_light_service)
+vehicle_service = VehicleService(
+    traffic_light_service=traffic_light_service
+)
 map = Map()
 
 training_start_time = time.time()
@@ -29,52 +33,69 @@ os.makedirs(
     exist_ok=True
 )
 
+HEADLESS = True
+LOG_INTERVAL = 100
+MOVING_AVERAGE_WINDOW_SIZE = 50
+
 TARGET_GAMES = 10000
+
 EPSILON_DECAY_GAMES = 8000
 START_EPSILON = 1.0
 END_EPSILON = 0.0
 
-UPDATE_INTERVAL = 8
-SYNC_INTERVAL = 4096
-LOG_INTERVAL = 100
-
-HEADLESS = True
-
-ticks_since_sync = 0
-ticks_since_update = 0
+UPDATE_INTERVAL = 1
+SYNC_INTERVAL = 1024
 
 total_reward_history = []
 epsilon_history = []
 tick_count_history = []
-flow_rate_history = []
-car_waiting_time_history = []
-train_waiting_time_history = []
+cars_waiting_ticks_history = []
+trains_waiting_ticks_history = []
 total_cars_passed_history = []
 total_trains_passed_history = []
 
-agent = DQNAgent(
-    in_features=30,
-    out_features=len(TRAFFIC_LIGHT_PHASES) + 1
-)
 
-
-def calculate_epsilon(game_index):
-    progress = min(game_index / EPSILON_DECAY_GAMES, 1.0)
+def calculate_epsilon(game_number):
+    progress = min(game_number / EPSILON_DECAY_GAMES, 1.0)
     return START_EPSILON - progress * (START_EPSILON - END_EPSILON)
 
 
-def save_history_plot(file_name, history, y_label, title):
+def calculate_partial_moving_averages(values, window_size):
+    moving_averages = []
+    for index in range(len(values)):
+        if index + 1 < window_size:
+            moving_averages.append(
+                sum(values[0: index + 1]) / (index + 1)
+            )
+            continue
+
+        moving_averages.append(
+            sum(values[index - window_size + 1: index + 1]) / window_size
+        )
+
+    return moving_averages
+
+
+def save_history_plot(file_name, value_history, value_label, plot_title):
     figure = plt.figure(figsize=(12, 6))
-    x_values = list(range(1, len(history) + 1))
+
+    moving_averages = calculate_partial_moving_averages(
+        value_history,
+        MOVING_AVERAGE_WINDOW_SIZE
+    )
+
+    games = list(
+        range(1, len(value_history) + 1)
+    )
 
     plt.plot(
-        x_values,
-        history,
+        games,
+        moving_averages
     )
 
     plt.xlabel('Game')
-    plt.ylabel(y_label)
-    plt.title(title)
+    plt.ylabel(value_label)
+    plt.title(plot_title)
 
     figure.savefig(
         os.path.join(output_path, file_name),
@@ -94,56 +115,42 @@ def save_training_checkpoint():
         'total_reward_history.jpg',
         total_reward_history,
         'Total Reward',
-        'Total Reward History'
+        f'Total Reward History ({MOVING_AVERAGE_WINDOW_SIZE}-Game PMA)'
     )
 
     save_history_plot(
         'game_length_history.jpg',
         tick_count_history,
         'Game Length (Ticks)',
-        'Game Length History'
+        f'Game Length History ({MOVING_AVERAGE_WINDOW_SIZE}-Game PMA)'
     )
 
     save_history_plot(
-        'flow_rate_history.jpg',
-        flow_rate_history,
-        'Flow Rate (Vehicles/Tick)',
-        'Flow Rate History'
-    )
-
-    save_history_plot(
-        'car_waiting_time_history.jpg',
-        car_waiting_time_history,
+        'car_ticks_waiting_history.jpg',
+        cars_waiting_ticks_history,
         'Average Waiting Time (Cars)',
-        'Average Car Waiting Time History'
+        f'Average Ticks Waiting History ({MOVING_AVERAGE_WINDOW_SIZE}-Game PMA)'
     )
 
     save_history_plot(
-        'train_waiting_time_history.jpg',
-        train_waiting_time_history,
-        'Average Waiting Time (Trains)',
-        'Average Train Waiting Time History'
+        'train_ticks_waiting_history.jpg',
+        trains_waiting_ticks_history,
+        'Average Ticks Waiting',
+        f'Average Ticks Waiting History (Trains) ({MOVING_AVERAGE_WINDOW_SIZE}-Game PMA)'
     )
 
     save_history_plot(
         'total_cars_passed_history.jpg',
         total_cars_passed_history,
         'Cars Passed',
-        'Cars Passed History'
+        f'Cars Passed History ({MOVING_AVERAGE_WINDOW_SIZE}-Game PMA)',
     )
 
     save_history_plot(
         'total_trains_passed_history.jpg',
         total_trains_passed_history,
         'Trains Passed',
-        'Trains Passed History'
-    )
-
-    save_history_plot(
-        'epsilon_history.jpg',
-        epsilon_history,
-        'Epsilon',
-        'Epsilon History'
+        f'Trains Passed History ({MOVING_AVERAGE_WINDOW_SIZE}-Game PMA)'
     )
 
 
@@ -153,11 +160,46 @@ def training_log(message):
         f.write(f'{message}\n')
 
 
-for game_index in range(TARGET_GAMES):
-    total_reward = 0.0
-    ticks = 0
+def save_history():
+    cars_waiting_ticks_history.append(
+        vehicle_service.average_ticks_waiting_cars()
+    )
+    trains_waiting_ticks_history.append(
+        vehicle_service.average_ticks_waiting_trains()
+    )
+    total_cars_passed_history.append(vehicle_service.total_cars_passed)
+    total_trains_passed_history.append(vehicle_service.total_trains_passed)
+    total_reward_history.append(game_reward)
+    tick_count_history.append(game_ticks)
 
-    epsilon = calculate_epsilon(game_index + 1)
+
+def debug_render():
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            raise SystemExit
+
+        surface.fill('black')
+
+        map.draw(surface)
+        traffic_light_service.draw(surface)
+        vehicle_service.draw(surface)
+
+        pygame.display.flip()
+        clock.tick()
+
+
+agent = DQNAgent()
+training_ticks = 0
+game_ticks = 0
+ticks_since_sync = 0
+ticks_since_update = 0
+
+game_reward = 0.0
+
+
+for game_index in range(TARGET_GAMES):
+    game_ticks = 0
+    game_reward = 0.0
 
     terminated_flag, truncated_flag = False, False
 
@@ -165,8 +207,10 @@ for game_index in range(TARGET_GAMES):
     vehicle_service.reset()
     current_state = vehicle_service.state()
 
+    epsilon = calculate_epsilon(game_index + 1)
+
     while not terminated_flag and not truncated_flag:
-        action, random_action_taken = agent.next_action(
+        action = agent.next_action(
             current_state,
             epsilon=epsilon
         )
@@ -177,7 +221,10 @@ for game_index in range(TARGET_GAMES):
             traffic_light_service.turn_all_red()
 
         new_state, reward, terminated_flag, truncated_flag = vehicle_service.update()
-        total_reward = total_reward + reward
+        game_reward = game_reward + reward
+
+        if not HEADLESS:
+            debug_render()
 
         agent.remember(
             current_state,
@@ -186,19 +233,6 @@ for game_index in range(TARGET_GAMES):
             reward,
             terminated_flag
         )
-
-        if not HEADLESS:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    raise SystemExit
-
-            surface.fill((0, 0, 0))
-            map.draw(surface)
-            traffic_light_service.draw(surface)
-            vehicle_service.draw(surface)
-
-            pygame.display.flip()
-            clock.tick()
 
         current_state = new_state
 
@@ -210,24 +244,19 @@ for game_index in range(TARGET_GAMES):
             ticks_since_sync = 0
             agent.sync_networks()
 
-        ticks = ticks + 1
+        game_ticks = game_ticks + 1
         ticks_since_sync = ticks_since_sync + 1
         ticks_since_update = ticks_since_update + 1
 
-    flow_rate_history.append(vehicle_service.flow_rate())
-    car_waiting_time_history.append(vehicle_service.average_ticks_waiting_cars())
-    train_waiting_time_history.append(vehicle_service.average_ticks_waiting_trains())
-    total_cars_passed_history.append(vehicle_service.total_cars_passed)
-    total_trains_passed_history.append(vehicle_service.total_trains_passed)
-    total_reward_history.append(total_reward)
-    tick_count_history.append(ticks)
-    epsilon_history.append(epsilon)
+    training_ticks = training_ticks + game_ticks
+    save_history()
 
     if game_index == 0 or (game_index + 1) % LOG_INTERVAL == 0:
-        training_log(f'Game Done -> {game_index + 1:5d} / {TARGET_GAMES} | Training Progress -> {(game_index + 1) / TARGET_GAMES * 100.0:.2f}% | Epsilon -> {epsilon:.2f}')
-
-    save_training_checkpoint()
-
+        training_log(f'Game Done -> {game_index + 1:5d} / {TARGET_GAMES} | Training Progress -> {(game_index + 1) / TARGET_GAMES * 100.0:.2f}%')
+        save_training_checkpoint()
 
 training_duration = time.time() - training_start_time
-training_log(f'Training Done | Took ({training_duration / 3600.0:.1f} hours)')
+training_log(f'Training Done | Took -> {training_duration / 3600.0:.1f} hours | Ticks -> {training_ticks}')
+
+save_training_checkpoint()
+training_log(f'Model Location -> \'{model_path}\'')

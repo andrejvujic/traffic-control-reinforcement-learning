@@ -10,11 +10,13 @@ import torch.nn as nn
 import torch.optim as optim
 
 
+INPUT_FEATURES = 40
+OUTPUT_FEATURES = len(TRAFFIC_LIGHT_PHASES) + 1
+
+
 class DQNAgent:
     def __init__(
         self,
-        in_features,
-        out_features,
         memory_size=8192,
         batch_size=64,
         batch_count=1,
@@ -23,13 +25,13 @@ class DQNAgent:
         epochs=1,
     ):
         self.policy_network = Network(
-            in_features,
-            out_features
+            INPUT_FEATURES,
+            OUTPUT_FEATURES
         )
 
         self.target_network = Network(
-            in_features,
-            out_features
+            INPUT_FEATURES,
+            OUTPUT_FEATURES
         )
 
         self.replay_buffer = ReplayBuffer(
@@ -37,7 +39,10 @@ class DQNAgent:
             batch_size,
         )
 
-        self.optimizer = optim.Adam(self.policy_network.parameters(), alpha)
+        self.optimizer = optim.Adam(
+            self.policy_network.parameters(),
+            alpha
+        )
 
         self.epochs = epochs
         self.batch_size = batch_size
@@ -62,22 +67,26 @@ class DQNAgent:
 
     def next_action(self, state, epsilon=0.0):
         if random_bool(true_probability=epsilon):
-            return random.choice(self.ACTIONS), True
+            return random.choice(
+                range(OUTPUT_FEATURES)
+            )
 
         with T.no_grad():
-            actions = self.policy_network(
+            action = self.policy_network(
                 T.tensor(state, dtype=T.float32)
-            )
-            return actions.argmax().item(), False
+            ).argmax()
+            return action.item()
 
     def learn(self):
         if len(self.replay_buffer) < self.batch_size * self.batch_count:
             return
 
         loss_function = nn.SmoothL1Loss()
-        for states, actions, new_states, rewards, terminated_flags in islice(
-            self.replay_buffer.sample(), self.batch_count
-        ):
+        for states, actions, new_states, rewards, terminated_flags\
+                in islice(
+                    self.replay_buffer.sample(),
+                    self.batch_count
+                ):
             current_q = self.policy_network(states)
 
             current_q = current_q.gather(
@@ -105,5 +114,3 @@ class DQNAgent:
         self.policy_network.load_state_dict(
             T.load(path)
         )
-
-    ACTIONS = range(len(TRAFFIC_LIGHT_PHASES) + 1)

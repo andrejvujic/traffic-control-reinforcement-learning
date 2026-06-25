@@ -39,7 +39,6 @@ BATCH_SIZE = 64
 EPOCHS = 8
 
 total_reward_history = []
-epsilon_history = []
 tick_count_history = []
 cars_waiting_ticks_history = []
 trains_waiting_ticks_history = []
@@ -235,7 +234,7 @@ for game_index in range(TARGET_GAMES):
         save_training_checkpoint()
 
 training_duration = time.time() - training_start_time
-training_log(f'Training Done | Took ({training_duration / 3600.0:.1f} hours) | Ticks: {training_ticks}')
+training_log(f'Training Done | Took -> {training_duration / 3600.0:.1f} hours | Ticks -> {training_ticks}')
 
 save_training_checkpoint()
 training_log(f'Model Location -> \'{model_path}\'')

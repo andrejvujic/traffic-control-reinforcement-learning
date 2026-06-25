@@ -34,6 +34,8 @@ class VehicleService:
         self.trains: list[Train] = []
         self.train_spawner = TrainSpawner(assets_directory='assets/trains')
 
+        self.queue_length = [0 for _ in range(TOTAL_LANES)]
+
     def reset(self):
         self.cars = []
         self.trains = []
@@ -47,10 +49,13 @@ class VehicleService:
         self.trains_passed_this_tick = 0
         self.total_ticks_waiting_trains = 0
 
+        self.queue_length = [0 for _ in range(TOTAL_LANES)]
+
     def update(self):
         self.ticks = self.ticks + 1
         self.cars_passed_this_tick = 0
         self.trains_passed_this_tick = 0
+        self.queue_length = [0 for _ in range(TOTAL_LANES)]
 
         if self.ticks % CAR_SPAWN_INTERVAL == 0 and random_bool(CAR_SPAWN_PROBABILITY):
             self.cars.append(
@@ -73,6 +78,7 @@ class VehicleService:
                 continue
 
             car.mark_waiting()
+            self.queue_length[car.lane_index] += 1
 
         for train in self.trains:
             if self.ticks % TRAIN_MOVEMENT_INTERVAL == 0 and self.can_train_move(train):
@@ -80,6 +86,7 @@ class VehicleService:
                 continue
 
             train.mark_waiting()
+            self.queue_length[train.lane_index] += 1
 
         self.__remove_dead_vehicles()
 

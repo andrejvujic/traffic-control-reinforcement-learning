@@ -66,13 +66,13 @@ class PPOAgent:
 
         return advantages
 
-    def next_action(self, state, sample=True):
+    def next_action(self, state, deterministc=True):
         with T.no_grad():
             state_tensor = T.tensor(state, dtype=T.float32)
             logits = self.actor(state_tensor)
             dist = Categorical(logits=logits)
 
-            if sample:
+            if not deterministc:
                 action = dist.sample()
                 return action.item(), dist.log_prob(action).item()
 

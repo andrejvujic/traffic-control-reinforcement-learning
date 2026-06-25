@@ -423,6 +423,19 @@ TRAFFIC_LIGHT_PHASES = [
     {9},
 ]
 
+LANE_NAMES = [
+    'West-East Left',
+    'West-East Forward & Right',
+    'South-North Left',
+    'South-North Forward & Right',
+    'East-West Left',
+    'East-West Forward & Right',
+    'North-South Left',
+    'North-South Forward & Right',
+    'West-East (Train)',
+    'South-North (Train)',
+]
+
 CAR_MOVEMENT_INTERVAL = 1
 CAR_SPAWN_INTERVAL = 3
 CAR_SPAWN_PROBABILITY = 0.75

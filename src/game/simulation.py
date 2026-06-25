@@ -49,7 +49,7 @@ class Game:
                     self.handle_toggle_render_hud_click(event.pos)
 
             # action, _ = self.dqn_agent.next_action(current_state)
-            action, _ = self.ppo_agent.next_action(current_state, sample=False)
+            action, _ = self.ppo_agent.next_action(current_state, deterministc=False)
 
             if action < len(TRAFFIC_LIGHT_PHASES):
                 self.traffic_light_service.apply_phase(action)

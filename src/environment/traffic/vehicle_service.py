@@ -23,19 +23,19 @@ class VehicleService:
 
         self.total_cars_passed = 0
         self.cars_passed_this_tick = 0
-        self.total_ticks_waiting_cars = 0
+        self.passed_cars_ticks_waiting = 0
 
         self.cars: list[Car] = []
         self.car_spawner = CarSpawner(assets_directory='assets/cars')
 
         self.total_trains_passed = 0
         self.trains_passed_this_tick = 0
-        self.total_ticks_waiting_trains = 0
+        self.passed_trains_ticks_waiting = 0
 
         self.trains: list[Train] = []
         self.train_spawner = TrainSpawner(assets_directory='assets/trains')
 
-        self.queue_length = [0 for _ in range(TOTAL_LANES)]
+        self.queue_length_history = [[] for _ in range(TOTAL_LANES)]
 
     def reset(self):
         self.cars = []
@@ -44,19 +44,18 @@ class VehicleService:
 
         self.total_cars_passed = 0
         self.cars_passed_this_tick = 0
-        self.total_ticks_waiting_cars = 0
+        self.passed_cars_ticks_waiting = 0
 
         self.total_trains_passed = 0
         self.trains_passed_this_tick = 0
-        self.total_ticks_waiting_trains = 0
+        self.passed_trains_ticks_waiting = 0
 
-        self.queue_length = [0 for _ in range(TOTAL_LANES)]
+        self.queue_length_history = [[] for _ in range(TOTAL_LANES)]
 
     def update(self):
         self.ticks = self.ticks + 1
         self.cars_passed_this_tick = 0
         self.trains_passed_this_tick = 0
-        self.queue_length = [0 for _ in range(TOTAL_LANES)]
 
         if self.ticks % CAR_SPAWN_INTERVAL == 0 and random_bool(CAR_SPAWN_PROBABILITY):
             self.cars.append(
@@ -73,13 +72,14 @@ class VehicleService:
             if new_train:
                 self.trains.append(new_train)
 
+        current_queue_length = [0 for _ in range(TOTAL_LANES)]
         for car in self.cars:
             if self.ticks % CAR_MOVEMENT_INTERVAL == 0 and self.can_car_move(car):
                 car.move()
                 continue
 
             car.mark_waiting()
-            self.queue_length[car.lane_index] += 1
+            current_queue_length[car.lane_index] += 1
 
         for train in self.trains:
             if self.ticks % TRAIN_MOVEMENT_INTERVAL == 0 and self.can_train_move(train):
@@ -87,8 +87,12 @@ class VehicleService:
                 continue
 
             train.mark_waiting()
-            self.queue_length[train.lane_index] += 1
+            current_queue_length[train.lane_index] += 1
 
+        for index in range(TOTAL_LANES):
+            self.queue_length_history[index].append(
+                current_queue_length[index]
+            )
         self.__remove_dead_vehicles()
 
         return self.state(), self.evaluate_state(), self.has_collision(), self.ticks >= MAX_TICKS_PER_EPISODE
@@ -123,12 +127,12 @@ class VehicleService:
                 if isinstance(vehicle, Car):
                     self.total_cars_passed = self.total_cars_passed + 1
                     self.cars_passed_this_tick = self.cars_passed_this_tick + 1
-                    self.total_ticks_waiting_cars = self.total_ticks_waiting_cars + vehicle.ticks_waiting
+                    self.passed_cars_ticks_waiting = self.passed_cars_ticks_waiting + vehicle.ticks_waiting
 
                 if isinstance(vehicle, Train):
                     self.total_trains_passed = self.total_trains_passed + 1
                     self.trains_passed_this_tick = self.trains_passed_this_tick + 1
-                    self.total_ticks_waiting_trains = self.total_ticks_waiting_trains + vehicle.ticks_waiting
+                    self.passed_trains_ticks_waiting = self.passed_trains_ticks_waiting + vehicle.ticks_waiting
 
         self.cars = [car for car in self.cars if car.on_screen()]
         self.trains = [train for train in self.trains if train.on_screen()]
@@ -314,22 +318,23 @@ class VehicleService:
         return reward
 
     def average_ticks_waiting_cars(self):
-        total_ticks_waiting = self.total_ticks_waiting_cars + sum(
+        total_cars = self.total_cars_passed + len(self.cars)
+
+        return self.total_ticks_waiting_cars() / total_cars if total_cars > 0 else 0.0
+
+    def average_ticks_waiting_trains(self):
+        total_trains = self.total_trains_passed + len(self.trains)
+        return self.total_ticks_waiting_trains() / total_trains if total_trains > 0 else 0.0
+
+    def total_ticks_waiting_cars(self):
+        return self.passed_cars_ticks_waiting + sum(
             car.ticks_waiting for car in self.cars
         )
 
-        total_cars = self.total_cars_passed + len(self.cars)
-
-        return total_ticks_waiting / total_cars if total_cars > 0 else 0.0
-
-    def average_ticks_waiting_trains(self):
-        total_ticks_waiting = self.total_ticks_waiting_trains + sum(
+    def total_ticks_waiting_trains(self):
+        return self.passed_trains_ticks_waiting + sum(
             train.ticks_waiting for train in self.trains
         )
-
-        total_trains = self.total_trains_passed + len(self.trains)
-
-        return total_ticks_waiting / total_trains if total_trains > 0 else 0.0
 
     def active_vehicles(self):
         return len([*self.cars, *self.trains])

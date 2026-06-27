@@ -14,7 +14,8 @@ import pygame
 
 
 class VehicleService:
-    VEHICLE_COUNT_NORMALIZER = 15
+    VEHICLE_COUNT_NORMALIZER = 30
+    REWARD_VEHICLE_COUNT_LIMIT = 20
 
     def __init__(self, traffic_light_service: TrafficLightService):
         self.traffic_light_service = traffic_light_service
@@ -228,7 +229,10 @@ class VehicleService:
 
                 if opened_safely and appoarching_vehicles_per_lane[lane_index] > 0:
                     if lane_index in CAR_LANES:
-                        reward = reward + 16.0
+                        reward = reward + 12.0 + min(
+                            appoarching_vehicles_per_lane[lane_index],
+                            self.REWARD_VEHICLE_COUNT_LIMIT
+                        )
                         continue
 
                     reward = reward + 120.0
@@ -259,7 +263,7 @@ class VehicleService:
                 continue
 
             if lane_index in CAR_LANES:
-                reward = reward - 3.0
+                reward = reward - 3.5
                 continue
 
             reward = reward - 40.0
@@ -272,14 +276,14 @@ class VehicleService:
         ):
             if passable and waiting_vehicles > 0:
                 if lane_index in CAR_LANES:
-                    reward = reward + 6.0 * min(waiting_vehicles, self.VEHICLE_COUNT_NORMALIZER)
+                    reward = reward + 6.5 * min(waiting_vehicles, self.REWARD_VEHICLE_COUNT_LIMIT)
                     continue
 
                 reward = reward + 120.0 * waiting_vehicles
 
             if not passable and waiting_vehicles > 0:
                 if lane_index in CAR_LANES:
-                    reward = reward - 4.0 * min(waiting_vehicles, self.VEHICLE_COUNT_NORMALIZER)
+                    reward = reward - 4.0 * min(waiting_vehicles, self.REWARD_VEHICLE_COUNT_LIMIT)
                     continue
 
                 reward = reward - 100.0 * waiting_vehicles
@@ -296,7 +300,7 @@ class VehicleService:
             reward = reward + 1.0
 
             if not passable:
-                reward = reward - 15.0
+                reward = reward - 30.0
                 continue
 
             if lane_index in CAR_LANES:

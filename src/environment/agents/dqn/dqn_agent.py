@@ -1,4 +1,4 @@
-from src.environment.agents.dqn.network import Network
+from src.environment.agents.dqn.dqn import DQN
 from src.environment.agents.dqn.replay_buffer import ReplayBuffer
 from src.game.utilities import random_bool
 from src.game.constants import TRAFFIC_LIGHT_PHASES
@@ -17,26 +17,24 @@ OUTPUT_FEATURES = len(TRAFFIC_LIGHT_PHASES) + 1
 class DQNAgent:
     def __init__(
         self,
-        memory_size=8192,
+        memory_size=4096,
         batch_size=64,
-        batch_count=1,
-        alpha=0.0003,
+        alpha=0.0001,
         gamma=0.99,
         epochs=1,
     ):
-        self.policy_network = Network(
+        self.policy_network = DQN(
             INPUT_FEATURES,
             OUTPUT_FEATURES
         )
 
-        self.target_network = Network(
+        self.target_network = DQN(
             INPUT_FEATURES,
             OUTPUT_FEATURES
         )
 
         self.replay_buffer = ReplayBuffer(
-            memory_size,
-            batch_size,
+            memory_size
         )
 
         self.optimizer = optim.Adam(
@@ -46,7 +44,6 @@ class DQNAgent:
 
         self.epochs = epochs
         self.batch_size = batch_size
-        self.batch_count = batch_count
         self.gamma = gamma
 
         self.sync_networks()
@@ -78,31 +75,30 @@ class DQNAgent:
             return action.item()
 
     def learn(self):
-        if len(self.replay_buffer) < self.batch_size * self.batch_count:
+        if len(self.replay_buffer) < self.batch_size:
             return
 
-        loss_function = nn.SmoothL1Loss()
-        for states, actions, new_states, rewards, terminated_flags\
-                in islice(
-                    self.replay_buffer.sample(),
-                    self.batch_count
-                ):
-            current_q = self.policy_network(states)
+        loss_function = nn.MSELoss()
+        states, actions, new_states, rewards, terminated_flags = self.replay_buffer.get_tensors(
+            self.replay_buffer.sample(self.batch_size)
+        )
 
-            current_q = current_q.gather(
-                1,
-                actions.unsqueeze(1)
-            ).squeeze(1)
+        current_q = self.policy_network(states)
 
-            with T.no_grad():
-                next_q, _ = self.target_network(new_states).max(dim=1)
-                target_q = rewards + self.gamma * next_q * (1 - terminated_flags)
+        current_q = current_q.gather(
+            1,
+            actions.unsqueeze(1)
+        ).squeeze(1)
 
-            loss = loss_function(current_q, target_q)
+        with T.no_grad():
+            next_q, _ = self.target_network(new_states).max(dim=1)
+            target_q = rewards + self.gamma * next_q * (1 - terminated_flags)
 
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
+        loss = loss_function(current_q, target_q)
+
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
 
     def save(self, path):
         T.save(

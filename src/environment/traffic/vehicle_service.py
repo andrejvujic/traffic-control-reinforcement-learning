@@ -191,11 +191,10 @@ class VehicleService:
     def evaluate_state(self):
         reward = 0.0
 
-        # Small positive reward for avoiding surviving.
-        reward = reward + 0.05
-
         if self.has_collision():
-            reward = reward - 600.0
+            reward = reward - 10000.0
+
+        reward = reward + 0.01
 
         appoarching_vehicles_per_lane = [
             self.__count_approaching(lane_index) for lane_index in range(TOTAL_LANES)
@@ -213,44 +212,57 @@ class VehicleService:
         for lane_index, (previously_passable, now_passable) in enumerate(
             zip(old_traffic_light_state, new_traffic_light_state)
         ):
-            # If the agent changes the state of the traffic lights
-            # and there are still vehicles of the opposite type
-            # passing through the intersection it gets a negative reward.
             if not previously_passable and now_passable:
+                opened_safely = True
+
                 if lane_index in CAR_LANES and total_passing_trains > 0:
-                    reward = reward - 6.0
+                    opened_safely = False
 
                 if lane_index in TRAIN_LANES and total_passing_cars > 0:
-                    reward = reward - 3.0
+                    opened_safely = False
 
-                # The agent gets a negative reward for enabling
-                # traffic on incompatible car lanes.
                 for other_lane_index in CAR_LANES:
                     is_compatible = {other_lane_index, lane_index} in TRAFFIC_LIGHT_PHASES
                     if passing_vehicles_per_lane[other_lane_index] > 0 and not is_compatible:
-                        reward = reward - 0.25
+                        opened_safely = False
 
-        # The agents a small positive reward for keeping the same
-        # traffic light phase between ticks.
+                if opened_safely and appoarching_vehicles_per_lane[lane_index] > 0:
+                    if lane_index in CAR_LANES:
+                        reward = reward + 16.0
+                        continue
+
+                    reward = reward + 120.0
+
         if self.traffic_light_service.previous_action_repeated():
-            reward = reward + 0.1
+            reward = reward + 0.0
 
-        # Small negative reward for changing traffic light phase
-        # while vehicles are still passing.
-        if not self.traffic_light_service.previous_action_repeated():
+        if self.traffic_light_service.previous_action_repeated():
             total_passing_vehicles = total_passing_cars + total_passing_trains
             total_passing_vehicles = total_passing_vehicles - 1
             if total_passing_vehicles > 0:
-                reward = reward - 1.0
+                reward = reward - 0.0
 
         for lane_index, is_passable in enumerate(new_traffic_light_state):
             if lane_index in TRAIN_LANES:
                 continue
 
-            # Negative reward for having traffic for cars
-            # enabled when a train is approaching or waiting.
-            if is_passable and self.__approaching_trains() > 0:
-                reward = reward - 0.2
+            if not is_passable and self.__approaching_trains() > 0:
+                reward = reward + 0.0
+
+        for lane_index, is_passable in enumerate(new_traffic_light_state):
+            if not is_passable:
+                continue
+
+            has_approaching_vehicles = appoarching_vehicles_per_lane[lane_index] > 0
+            has_passing_vehicles = passing_vehicles_per_lane[lane_index] > 0
+            if has_approaching_vehicles or has_passing_vehicles:
+                continue
+
+            if lane_index in CAR_LANES:
+                reward = reward - 3.0
+                continue
+
+            reward = reward - 40.0
 
         for lane_index, (waiting_vehicles, passable) in enumerate(
             zip(
@@ -258,22 +270,19 @@ class VehicleService:
                 new_traffic_light_state
             )
         ):
-            # Positive reward for having traffic enabled
-            # on lanes where vehicles are waiting.
             if passable and waiting_vehicles > 0:
-                reward = reward + 0.05 * waiting_vehicles
-                continue
-
-            # Negative reward for having traffic disabled
-            # on lanes where vehicles are waiting.
-            if not passable and waiting_vehicles > 0:
                 if lane_index in CAR_LANES:
-                    reward = reward - 0.25 * waiting_vehicles
+                    reward = reward + 6.0 * min(waiting_vehicles, self.VEHICLE_COUNT_NORMALIZER)
                     continue
 
-                # The reward is more negative for trains
-                # to encourge the agent to give them priority.
-                reward = reward - 2.0 * waiting_vehicles
+                reward = reward + 120.0 * waiting_vehicles
+
+            if not passable and waiting_vehicles > 0:
+                if lane_index in CAR_LANES:
+                    reward = reward - 4.0 * min(waiting_vehicles, self.VEHICLE_COUNT_NORMALIZER)
+                    continue
+
+                reward = reward - 100.0 * waiting_vehicles
 
         for lane_index, (passing_vehicles, passable) in enumerate(
             zip(
@@ -284,30 +293,19 @@ class VehicleService:
             if not passing_vehicles:
                 continue
 
-            # Small positive reward for having vehicles
-            # inside of the intersection.
-            reward = reward + 0.025 * passing_vehicles
+            reward = reward + 1.0
 
-            # Negative reward for disabling traffic on a lane
-            # where vehicles are still inside the intersection.
             if not passable:
-                reward = reward - 1.0 * passing_vehicles
+                reward = reward - 15.0
                 continue
 
-            # Positive reward for keeping traffic enabled
-            # while vehiclesa are the intersection.
             if lane_index in CAR_LANES:
-                reward = reward + 0.5 * passing_vehicles
+                reward = reward + 10.0
             else:
-                # Bigger reward for trains because they make collisions
-                # more likely while in the intersection because
-                # of their size.
-                reward = reward + 3.5 * passing_vehicles
+                reward = reward + 60.0
 
-        # Positive reward for vehicles which successfully
-        # passed the intersection.
-        reward = reward + 0.5 * self.cars_passed_this_tick
-        reward = reward + 5.0 * self.trains_passed_this_tick
+        reward = reward + 30.0 * self.cars_passed_this_tick
+        reward = reward + 300.0 * self.trains_passed_this_tick
 
         return reward
 

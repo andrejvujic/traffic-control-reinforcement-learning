@@ -26,11 +26,8 @@ class Game:
         self.vechicle_service = VehicleService(traffic_light_service=self.traffic_light_service)
         self.map = Map()
 
-        self.dqn_agent = DQNAgent(
-            in_features=30,
-            out_features=len(TRAFFIC_LIGHT_PHASES) + 1
-        )
-        # self.dqn_agent.load('training_output/dqn/1782341084/model.pt')
+        self.dqn_agent = DQNAgent()
+        self.dqn_agent.load('training_output/dqn/1782549342/model.pt')
 
         self.ppo_agent = PPOAgent()
         self.ppo_agent.load('training_output/ppo/1782405690/model.pt')
@@ -48,8 +45,8 @@ class Game:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.handle_toggle_render_hud_click(event.pos)
 
-            # action, _ = self.dqn_agent.next_action(current_state)
-            action, _ = self.ppo_agent.next_action(current_state, deterministc=False)
+            action = self.dqn_agent.next_action(current_state)
+            # action, _ = self.ppo_agent.next_action(current_state, deterministc=False)
 
             if action < len(TRAFFIC_LIGHT_PHASES):
                 self.traffic_light_service.apply_phase(action)

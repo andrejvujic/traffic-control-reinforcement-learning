@@ -1,17 +1,12 @@
 import torch.nn as nn
 
 
-class Network(nn.Module):
+class DQN(nn.Module):
     def __init__(self, in_features, out_features):
-        super(Network, self).__init__()
+        super(DQN, self).__init__()
         self.network = nn.Sequential(
             nn.Linear(
                 in_features,
-                128
-            ),
-            nn.ReLU(),
-            nn.Linear(
-                128,
                 128
             ),
             nn.ReLU(),

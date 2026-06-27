@@ -1,21 +1,21 @@
 from model_evaluation import ModelEvaluation
-from src.environment.agents.ppo.ppo_agent import PPOAgent
+from src.environment.agents.dqn.dqn_agent import DQNAgent
 
 
-class PPOAgentEvaluation(ModelEvaluation):
+class DQNAgentEvaluation(ModelEvaluation):
     def __init__(self, model_path, target_games, seed):
         super().__init__(
-            model_name='PPO Agent',
+            model_name='DQN Agent',
             target_games=target_games,
             seed=seed
         )
 
-        self.agent = PPOAgent()
+        self.agent = DQNAgent()
         self.agent.load(model_path)
 
     def select_action(self, state):
-        action, _ = self.agent.next_action(
+        action = self.agent.next_action(
             state,
-            deterministc=True
+            epsilon=0.0
         )
         return action

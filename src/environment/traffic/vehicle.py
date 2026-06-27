@@ -26,6 +26,7 @@ class Vehicle(ABC):
 
         self.is_off_screen = False
 
+        self.is_waiting = False
         self.ticks_waiting = 0
 
     @abstractmethod
@@ -49,6 +50,8 @@ class Vehicle(ABC):
         self.state = state
 
     def move(self):
+        self.is_waiting = False
+
         dx, dy = self.direction
         self.x = self.x + dx
         self.y = self.y + dy
@@ -64,6 +67,7 @@ class Vehicle(ABC):
         self.is_off_screen = True
 
     def mark_waiting(self):
+        self.is_waiting = True
         self.ticks_waiting = self.ticks_waiting + 1
 
     @abstractmethod

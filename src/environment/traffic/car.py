@@ -33,7 +33,7 @@ class Car(Vehicle):
         )
 
     def collides_with(self, other):
-        if self == other:
+        if self == other or (isinstance(other, Vehicle) and self.lane_index == other.lane_index):
             return False
 
         if isinstance(other, Car):

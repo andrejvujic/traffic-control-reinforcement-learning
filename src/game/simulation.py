@@ -27,7 +27,7 @@ class Game:
         self.map = Map()
 
         self.dqn_agent = DQNAgent()
-        self.dqn_agent.load('training_output/dqn/1782549342/model.pt')
+        self.dqn_agent.load('training_output/dqn/1782587359/model.pt')
 
         self.ppo_agent = PPOAgent()
         self.ppo_agent.load('training_output/ppo/1782405690/model.pt')

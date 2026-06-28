@@ -33,7 +33,7 @@ HEADLESS = True
 LOG_INTERVAL = 100
 MOVING_AVERAGE_WINDOW_SIZE = 50
 
-TARGET_GAMES = 10000
+TARGET_GAMES = 50000
 UPDATE_INTERVAL = 512
 BATCH_SIZE = 64
 EPOCHS = 8
@@ -114,8 +114,8 @@ def save_training_checkpoint():
     save_history_plot(
         'car_ticks_waiting_history.jpg',
         cars_waiting_ticks_history,
-        'Average Waiting Time (Cars)',
-        f'Average Ticks Waiting History ({MOVING_AVERAGE_WINDOW_SIZE}-Game PMA)'
+        'Average Ticks Waiting',
+        f'Average Ticks Waiting History (Cars) ({MOVING_AVERAGE_WINDOW_SIZE}-Game PMA)'
     )
 
     save_history_plot(
@@ -190,7 +190,10 @@ for game_index in range(TARGET_GAMES):
     current_state = vehicle_service.state()
 
     while not terminated_flag and not truncated_flag:
-        action, action_log_prob = agent.next_action(current_state)
+        action, action_log_prob = agent.next_action(
+            current_state,
+            greedy=False
+        )
         value = agent.evaluate_state(current_state).item()
 
         if action < len(TRAFFIC_LIGHT_PHASES):

@@ -15,8 +15,8 @@ class PPOAgent:
         gamma=0.99,
         lambda_=0.95,
         epsilon=0.2,
-        actor_alpha=0.0003,
-        critic_alpha=0.0005
+        actor_alpha=0.0002,
+        critic_alpha=0.0002
     ):
         self.memory = RolloutBuffer()
 
@@ -66,13 +66,13 @@ class PPOAgent:
 
         return advantages
 
-    def next_action(self, state, deterministc=True):
+    def next_action(self, state, greedy=True):
         with T.no_grad():
             state_tensor = T.tensor(state, dtype=T.float32)
             logits = self.actor(state_tensor)
             dist = Categorical(logits=logits)
 
-            if not deterministc:
+            if not greedy:
                 action = dist.sample()
                 return action.item(), dist.log_prob(action).item()
 

@@ -16,6 +16,6 @@ class PPOAgentEvaluation(ModelEvaluation):
     def select_action(self, state):
         action, _ = self.agent.next_action(
             state,
-            deterministc=True
+            greedy=True
         )
         return action

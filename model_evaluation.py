@@ -42,18 +42,13 @@ class ModelEvaluation:
         average_ticks, average_reward, collision_percentage, total_passed_vehicle_count, \
             average_passed_vehicle_count, max_passed_vehicle_count, total_passed_car_count, \
             average_passed_car_count, total_passed_train_count, average_passed_train_count, average_flow_rate, \
-            max_flow_rate, average_phase_changes, average_queue_length, max_queue_length, train_average_waiting_ticks, \
-            car_average_waiting_ticks\
+            max_flow_rate, average_phase_changes, average_queue_length, max_queue_length, queue_active_percentage, \
+            train_average_waiting_ticks, car_average_waiting_ticks\
             = self.__run()
 
         evaluation_duration = time.time() - start_time
-        duration_minutes = int(evaluation_duration / 60)
-        duration_seconds = int(evaluation_duration - 60 * duration_minutes)
-
         print(f'\nEvaluation Took ->', end=' ')
-        if duration_minutes > 0:
-            print(f'{duration_minutes} min', end=' ')
-        print(f'{duration_seconds} seconds')
+        self.__print_formatted_duration(evaluation_duration)
 
         print('\n')
 
@@ -77,12 +72,13 @@ class ModelEvaluation:
 
         print('Lane Statistics:')
 
-        for index, (avearage_length, max_length) in enumerate(
-            zip(average_queue_length, max_queue_length)
+        for index, (avearage_length, max_length, queue_active) in enumerate(
+            zip(average_queue_length, max_queue_length, queue_active_percentage)
         ):
             print(f'\t{LANE_NAMES[index]}')
             print(f'\t\t- Average Queue Length -> {avearage_length:.2f}')
             print(f'\t\t- Max Queue Length -> {max_length}')
+            print(f'\t\t- Queue Active -> {queue_active * 100.0:.0f}%')
 
     def end(self):
         pygame.quit()
@@ -130,6 +126,9 @@ class ModelEvaluation:
                 if terminated_flag:
                     total_collisions = total_collisions + 1
 
+            for index, queue_length_history in enumerate(self.vehicle_service.queue_length_history):
+                queue_length[index].extend(queue_length_history)
+
             evaluation_progress = (game_index + 1) / self.target_games
             print(
                 f"\rEvaluating {self.model_name}... Progress -> {evaluation_progress * 100.0:.0f}%",
@@ -149,27 +148,32 @@ class ModelEvaluation:
                 total_vehicles_passed / game_ticks if game_ticks > 0 else 0.0
             )
 
-            for index, waiting_vehicles in enumerate(self.vehicle_service.queue_length):
-                queue_length[index].append(waiting_vehicles)
-
             phase_changes.append(game_phase_changes)
             train_waiting_ticks.append(
-                self.vehicle_service.total_ticks_waiting_trains
+                self.vehicle_service.total_ticks_waiting_trains()
             )
             car_waiting_ticks.append(
-                self.vehicle_service.total_ticks_waiting_cars
+                self.vehicle_service.total_ticks_waiting_cars()
             )
 
         max_queue_length = []
         average_queue_length = []
 
-        for lane_queue_length in queue_length:
+        for queue_length_history in queue_length:
             max_queue_length.append(
-                max(lane_queue_length)
+                max(queue_length_history)
             )
 
             average_queue_length.append(
-                self.__calculate_average(lane_queue_length)
+                self.__calculate_average(queue_length_history)
+            )
+
+        queue_active_percentage = []
+        for queue_length_history in queue_length:
+            total_samples = len(queue_length_history)
+            queue_active_percentage.append(
+                len([waiting_vehicles for waiting_vehicles in queue_length_history if waiting_vehicles > 0])
+                / total_samples if total_samples > 0 else 0.0
             )
 
         average_phase_changes = self.__calculate_average(phase_changes)
@@ -198,7 +202,14 @@ class ModelEvaluation:
         return average_ticks, average_reward, collision_percentage, total_passed_vehicle_count, \
             average_passed_vehicle_count, max_passed_vehicle_count, total_passed_car_count, average_passed_car_count, \
             total_passed_train_count, average_passed_train_count, average_flow_rate, max_flow_rate, average_phase_changes, \
-            average_queue_length, max_queue_length, train_average_waiting_ticks, car_average_waiting_ticks
+            average_queue_length, max_queue_length, queue_active_percentage, train_average_waiting_ticks, car_average_waiting_ticks
 
     def __calculate_average(self, values):
         return sum(values) / len(values) if len(values) > 0 else 0.0
+
+    def __print_formatted_duration(self, duration):
+        duration_minutes = int(duration / 60)
+        duration_seconds = int(duration - 60 * duration_minutes)
+        if duration_minutes > 0:
+            print(f'{duration_minutes} min', end=' ')
+        print(f'{duration_seconds} seconds')

@@ -38,13 +38,13 @@ HEADLESS = True
 LOG_INTERVAL = 100
 MOVING_AVERAGE_WINDOW_SIZE = 50
 
-TARGET_GAMES = 10000
-EPSILON_DECAY_GAMES = 7000
+TARGET_GAMES = 50000  # 10000
+EPSILON_DECAY_GAMES = 45000  # 7000
 START_EPSILON = 1.0
 END_EPSILON = 0.05
 
 UPDATE_INTERVAL = 1
-SYNC_INTERVAL = 1024
+SYNC_INTERVAL = 1500
 LEARNING_START_TH = 256
 
 total_reward_history = []
@@ -193,8 +193,8 @@ def save_training_checkpoint():
     save_pma_history_plot(
         'car_ticks_waiting_history.jpg',
         cars_waiting_ticks_history,
-        'Average Waiting Time (Cars)',
-        f'Average Ticks Waiting History ({MOVING_AVERAGE_WINDOW_SIZE}-Game PMA)'
+        'Average Ticks Waiting',
+        f'Average Ticks Waiting History (Cars) ({MOVING_AVERAGE_WINDOW_SIZE}-Game PMA)'
     )
 
     save_pma_history_plot(

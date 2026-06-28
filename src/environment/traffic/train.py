@@ -50,7 +50,7 @@ class Train(Vehicle):
         return occupied_positions
 
     def collides_with(self, other):
-        if self == other:
+        if self == other or (isinstance(other, Vehicle) and self.lane_index == other.lane_index):
             return False
 
         from src.environment.traffic.car import Car

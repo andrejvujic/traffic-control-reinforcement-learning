@@ -75,6 +75,9 @@ class Vehicle(ABC):
         pass
 
     def collides_with_any(self, other_vehicles):
+        if not self.is_in_intersection():
+            return False
+
         for other_vehicle in other_vehicles:
             if self.collides_with(other_vehicle):
                 return True

@@ -32,6 +32,31 @@ class ModelEvaluation(ABC):
         )
         self.map = Map()
 
+        self.average_ticks = 0.0
+        self.average_reward = 0.0
+        self.collision_percentage = 0.0
+
+        self.total_passed_vehicle_count = 0
+        self.average_passed_vehicle_count = 0.0
+        self.max_passed_vehicle_count = 0
+
+        self.average_active_vehicles = 0.0
+        self.max_active_vehicles = 0
+
+        self.total_passed_car_count = 0
+        self.average_passed_car_count = 0.0
+        self.total_passed_train_count = 0
+        self.average_passed_train_count = 0.0
+
+        self.train_average_waiting_ticks = 0.0
+        self.car_average_waiting_ticks = 0.0
+
+        self.average_phase_changes = 0.0
+
+        self.average_queue_length = []
+        self.max_queue_length = []
+        self.queue_active_percentage = []
+
     @abstractmethod
     def select_action(self, state):
         pass
@@ -39,12 +64,7 @@ class ModelEvaluation(ABC):
     def run(self):
         start_time = time.time()
 
-        average_ticks, average_reward, collision_percentage, total_passed_vehicle_count, \
-            average_passed_vehicle_count, max_passed_vehicle_count, average_active_vehicles, max_active_vehicles, \
-            total_passed_car_count, average_passed_car_count, total_passed_train_count, average_passed_train_count, average_flow_rate, \
-            max_flow_rate, average_phase_changes, average_queue_length, max_queue_length, queue_active_percentage, \
-            train_average_waiting_ticks, car_average_waiting_ticks\
-            = self.__run()
+        self.__run()
 
         evaluation_duration = time.time() - start_time
         print(f'\nEvaluation Took ->', end=' ')
@@ -54,31 +74,29 @@ class ModelEvaluation(ABC):
 
         print(f'Model -> {self.model_name}')
 
-        print(f'Average Game Length -> {average_ticks} ticks')
-        print(f'Average Reward -> {average_reward:.2f}')
-        print(f'Collisions -> {collision_percentage * 100.0:.0f}%\n')
-        print(f'Total Vehicles Passed -> {total_passed_vehicle_count}')
-        print(f'Average Vehicles Passed -> {average_passed_vehicle_count}')
-        print(f'Max Vehicles Passed -> {max_passed_vehicle_count}')
-        print(f'Average Active Vehicles -> {average_active_vehicles:.2f}')
-        print(f'Max Active Vehicles -> {max_active_vehicles}\n')
-        print(f'\tTotal Cars Passed -> {total_passed_car_count}')
-        print(f'\tAverage Cars Passed -> {average_passed_car_count}')
-        print(f'\tTotal Trains Passed -> {total_passed_train_count}')
-        print(f'\tAverage Trains Passed -> {average_passed_train_count}\n')
-        print(f'Average Waiting Time (Trains) -> {train_average_waiting_ticks:.2f} ticks')
-        print(f'Average Waiting Time (Cars) -> {car_average_waiting_ticks:.2f} ticks')
-        print(f'Average Flow Rate -> {average_flow_rate:.2f}')
-        print(f'Max Flow Rate -> {max_flow_rate:.2f}\n')
-        print(f'Average Phase Changes -> {average_phase_changes:.1f}\n')
+        print(f'Average Game Length -> {self.average_ticks} ticks')
+        print(f'Average Reward -> {self.average_reward:.2f}')
+        print(f'Collisions -> {self.collision_percentage * 100.0:.0f}%\n')
+        print(f'Total Vehicles Passed -> {self.total_passed_vehicle_count}')
+        print(f'Average Vehicles Passed -> {self.average_passed_vehicle_count}')
+        print(f'Max Vehicles Passed -> {self.max_passed_vehicle_count}')
+        print(f'Average Active Vehicles -> {self.average_active_vehicles:.2f}')
+        print(f'Max Active Vehicles -> {self.max_active_vehicles}\n')
+        print(f'\tTotal Cars Passed -> {self.total_passed_car_count}')
+        print(f'\tAverage Cars Passed -> {self.average_passed_car_count}')
+        print(f'\tTotal Trains Passed -> {self.total_passed_train_count}')
+        print(f'\tAverage Trains Passed -> {self.average_passed_train_count}\n')
+        print(f'Average Waiting Time (Trains) -> {self.train_average_waiting_ticks:.2f} ticks')
+        print(f'Average Waiting Time (Cars) -> {self.car_average_waiting_ticks:.2f} ticks')
+        print(f'Average Phase Changes -> {self.average_phase_changes:.1f}\n')
 
         print('Lane Statistics:')
 
-        for index, (avearage_length, max_length, queue_active) in enumerate(
-            zip(average_queue_length, max_queue_length, queue_active_percentage)
+        for index, (average_length, max_length, queue_active) in enumerate(
+            zip(self.average_queue_length, self.max_queue_length, self.queue_active_percentage)
         ):
             print(f'\t{LANE_NAMES[index]}')
-            print(f'\t\t- Average Queue Length -> {avearage_length:.2f}')
+            print(f'\t\t- Average Queue Length -> {average_length:.2f}')
             print(f'\t\t- Max Queue Length -> {max_length}')
             print(f'\t\t- Queue Active -> {queue_active * 100.0:.0f}%')
 
@@ -92,7 +110,6 @@ class ModelEvaluation(ABC):
         passed_vehicle_count = []
         passed_car_count = []
         passed_train_count = []
-        flow_rate = []
         queue_length = [[] for _ in range(TOTAL_LANES)]
         phase_changes = []
         train_waiting_ticks = []
@@ -165,10 +182,6 @@ class ModelEvaluation(ABC):
             passed_car_count.append(self.vehicle_service.total_cars_passed)
             passed_train_count.append(self.vehicle_service.total_trains_passed)
 
-            flow_rate.append(
-                total_vehicles_passed / game_ticks if game_ticks > 0 else 0.0
-            )
-
             phase_changes.append(game_phase_changes)
             train_waiting_ticks.append(
                 self.vehicle_service.total_ticks_waiting_trains()
@@ -183,59 +196,51 @@ class ModelEvaluation(ABC):
                 self.vehicle_service.total_cars_passed + len(self.vehicle_service.cars)
             )
 
-        average_active_vehicles = total_active_vehicles / total_ticks if total_ticks > 0 else 0.0
+        self.average_active_vehicles = total_active_vehicles / total_ticks if total_ticks > 0 else 0.0
+        self.max_active_vehicles = max_active_vehicles
 
-        max_queue_length = []
-        average_queue_length = []
+        self.max_queue_length = []
+        self.average_queue_length = []
 
         for queue_length_history in queue_length:
-            max_queue_length.append(
+            self.max_queue_length.append(
                 max(queue_length_history)
             )
 
-            average_queue_length.append(
+            self.average_queue_length.append(
                 self.__calculate_average(queue_length_history)
             )
 
-        queue_active_percentage = []
+        self.queue_active_percentage = []
         for queue_length_history in queue_length:
             total_samples = len(queue_length_history)
-            queue_active_percentage.append(
+            self.queue_active_percentage.append(
                 len([waiting_vehicles for waiting_vehicles in queue_length_history if waiting_vehicles > 0])
                 / total_samples if total_samples > 0 else 0.0
             )
 
-        average_phase_changes = self.__calculate_average(phase_changes)
+        self.average_phase_changes = self.__calculate_average(phase_changes)
 
-        average_flow_rate = self.__calculate_average(flow_rate)
-        max_flow_rate = max(flow_rate)
+        self.total_passed_vehicle_count = sum(passed_vehicle_count)
+        self.average_passed_vehicle_count = self.__calculate_average(passed_vehicle_count)
+        self.max_passed_vehicle_count = max(passed_vehicle_count)
 
-        total_passed_vehicle_count = sum(passed_vehicle_count)
-        average_passed_vehicle_count = self.__calculate_average(passed_vehicle_count)
-        max_passed_vehicle_count = max(passed_vehicle_count)
+        self.total_passed_car_count = sum(passed_car_count)
+        self.average_passed_car_count = self.__calculate_average(passed_car_count)
 
-        total_passed_car_count = sum(passed_car_count)
-        average_passed_car_count = self.__calculate_average(passed_car_count)
+        self.total_passed_train_count = sum(passed_train_count)
+        self.average_passed_train_count = self.__calculate_average(passed_train_count)
 
-        total_passed_train_count = sum(passed_train_count)
-        average_passed_train_count = self.__calculate_average(passed_train_count)
-
-        average_ticks = total_ticks / self.target_games
+        self.average_ticks = total_ticks / self.target_games
 
         total_train_count = sum(train_count)
         total_car_count = sum(car_count)
 
-        train_average_waiting_ticks = sum(train_waiting_ticks) / total_train_count if total_train_count > 0 else 0.0
-        car_average_waiting_ticks = sum(car_waiting_ticks) / total_car_count if total_car_count > 0 else 0.0
+        self.train_average_waiting_ticks = sum(train_waiting_ticks) / total_train_count if total_train_count > 0 else 0.0
+        self.car_average_waiting_ticks = sum(car_waiting_ticks) / total_car_count if total_car_count > 0 else 0.0
 
-        average_reward = total_reward / self.target_games
-        collision_percentage = total_collisions / self.target_games
-
-        return average_ticks, average_reward, collision_percentage, total_passed_vehicle_count, \
-            average_passed_vehicle_count, max_passed_vehicle_count, average_active_vehicles, max_active_vehicles, \
-            total_passed_car_count, average_passed_car_count, total_passed_train_count, average_passed_train_count, \
-            average_flow_rate, max_flow_rate, average_phase_changes, \
-            average_queue_length, max_queue_length, queue_active_percentage, train_average_waiting_ticks, car_average_waiting_ticks
+        self.average_reward = total_reward / self.target_games
+        self.collision_percentage = total_collisions / self.target_games
 
     def __calculate_average(self, values):
         return sum(values) / len(values) if len(values) > 0 else 0.0

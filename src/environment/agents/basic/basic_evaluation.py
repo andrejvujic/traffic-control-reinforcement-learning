@@ -1,9 +1,8 @@
-from model_evaluation import ModelEvaluation
+from src.environment.agents.agent_evaluation import AgentEvaluation
 from src.environment.agents.basic.basic_agent import BasicAgent
-import torch as T
 
 
-class BasicAgentEvaluation(ModelEvaluation):
+class BasicAgentEvaluation(AgentEvaluation):
     def __init__(self, target_games, seed):
         super().__init__(
             model_name='Basic Agent',

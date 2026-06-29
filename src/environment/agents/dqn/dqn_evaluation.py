@@ -1,8 +1,8 @@
-from model_evaluation import ModelEvaluation
+from src.environment.agents.agent_evaluation import AgentEvaluation
 from src.environment.agents.dqn.dqn_agent import DQNAgent
 
 
-class DQNAgentEvaluation(ModelEvaluation):
+class DQNAgentEvaluation(AgentEvaluation):
     def __init__(self, model_path, target_games, seed):
         super().__init__(
             model_name='DQN Agent',

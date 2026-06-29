@@ -1,8 +1,8 @@
-from model_evaluation import ModelEvaluation
+from src.environment.agents.agent_evaluation import AgentEvaluation
 from src.environment.agents.ppo.ppo_agent import PPOAgent
 
 
-class PPOAgentEvaluation(ModelEvaluation):
+class PPOAgentEvaluation(AgentEvaluation):
     def __init__(self, model_path, target_games, seed):
         super().__init__(
             model_name='PPO Agent',

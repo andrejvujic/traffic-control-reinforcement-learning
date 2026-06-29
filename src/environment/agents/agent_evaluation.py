@@ -8,7 +8,7 @@ import random
 import time
 
 
-class ModelEvaluation(ABC):
+class AgentEvaluation(ABC):
     def __init__(
         self,
         model_name,

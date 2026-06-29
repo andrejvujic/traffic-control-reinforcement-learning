@@ -1,9 +1,8 @@
-from model_evaluation import ModelEvaluation
+from src.environment.agents.agent_evaluation import AgentEvaluation
 from src.environment.agents.random.random_agent import RandomAgent
-import torch as T
 
 
-class RandomAgentEvaluation(ModelEvaluation):
+class RandomAgentEvaluation(AgentEvaluation):
     def __init__(self, target_games, seed):
         super().__init__(
             model_name='Random Agent',

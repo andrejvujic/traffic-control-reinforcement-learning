@@ -1,7 +1,7 @@
-from ppo_evaluation import PPOAgentEvaluation
-from dqn_evaluation import DQNAgentEvaluation
-from basic_evaluation import BasicAgentEvaluation
-from random_evaluation import RandomAgentEvaluation
+from src.environment.agents.ppo.ppo_evaluation import PPOAgentEvaluation
+from src.environment.agents.dqn.dqn_evaluation import DQNAgentEvaluation
+from src.environment.agents.basic.basic_evaluation import BasicAgentEvaluation
+from src.environment.agents.random.random_evaluation import RandomAgentEvaluation
 
 EVALUATION_GAMES = 1000
 EVALUATION_SEED = 42

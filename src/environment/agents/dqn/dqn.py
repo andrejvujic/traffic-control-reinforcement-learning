@@ -7,16 +7,16 @@ class DQN(nn.Module):
         self.network = nn.Sequential(
             nn.Linear(
                 in_features,
-                128
+                256
             ),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(
-                128,
-                128
+                256,
+                256
             ),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(
-                128,
+                256,
                 out_features
             )
         )

@@ -14,8 +14,7 @@ class DQNAgentEvaluation(ModelEvaluation):
         self.agent.load(model_path)
 
     def select_action(self, state):
-        action = self.agent.next_action(
+        return self.agent.next_action(
             state,
             epsilon=0.0
         )
-        return action

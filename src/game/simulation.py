@@ -27,10 +27,10 @@ class Game:
         self.map = Map()
 
         self.dqn_agent = DQNAgent()
-        self.dqn_agent.load('training_output/dqn/1782587359/model.pt')
+        self.dqn_agent.load('training_output/dqn/1782719029/model.pt')
 
         self.ppo_agent = PPOAgent()
-        self.ppo_agent.load('training_output/ppo/1782405690/model.pt')
+        self.ppo_agent.load('training_output/ppo/1782599868/model.pt')
 
     def run(self):
         running = True
@@ -46,7 +46,7 @@ class Game:
                     self.handle_toggle_render_hud_click(event.pos)
 
             action = self.dqn_agent.next_action(current_state)
-            # action, _ = self.ppo_agent.next_action(current_state, deterministc=False)
+            # action, _ = self.ppo_agent.next_action(current_state, greedy=True)
 
             if action < len(TRAFFIC_LIGHT_PHASES):
                 self.traffic_light_service.apply_phase(action)

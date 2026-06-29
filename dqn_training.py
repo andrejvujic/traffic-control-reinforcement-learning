@@ -38,14 +38,13 @@ HEADLESS = True
 LOG_INTERVAL = 100
 MOVING_AVERAGE_WINDOW_SIZE = 50
 
-TARGET_GAMES = 50000  # 10000
-EPSILON_DECAY_GAMES = 45000  # 7000
+TARGET_GAMES = 10000
+EPSILON_DECAY_GAMES = 8000
 START_EPSILON = 1.0
 END_EPSILON = 0.05
 
 UPDATE_INTERVAL = 1
-SYNC_INTERVAL = 1500
-LEARNING_START_TH = 256
+SYNC_INTERVAL = 512
 
 total_reward_history = []
 epsilon_history = []
@@ -301,14 +300,13 @@ for game_index in range(TARGET_GAMES):
 
         current_state = new_state
 
-        if training_ticks + game_ticks >= LEARNING_START_TH:
-            if ticks_since_update >= UPDATE_INTERVAL:
-                ticks_since_update = 0
-                agent.learn()
+        if ticks_since_update >= UPDATE_INTERVAL:
+            ticks_since_update = 0
+            agent.learn()
 
-            if ticks_since_sync >= SYNC_INTERVAL:
-                ticks_since_sync = 0
-                agent.sync_networks()
+        if ticks_since_sync >= SYNC_INTERVAL:
+            ticks_since_sync = 0
+            agent.sync_networks()
 
         game_ticks = game_ticks + 1
         ticks_since_sync = ticks_since_sync + 1

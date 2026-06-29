@@ -2,7 +2,6 @@ from src.environment.agents.dqn.dqn import DQN
 from src.environment.agents.dqn.replay_buffer import ReplayBuffer
 from src.game.utilities import random_bool
 from src.game.constants import TRAFFIC_LIGHT_PHASES
-from itertools import islice
 
 import random
 import torch as T
@@ -17,11 +16,10 @@ OUTPUT_FEATURES = len(TRAFFIC_LIGHT_PHASES) + 1
 class DQNAgent:
     def __init__(
         self,
-        memory_size=4096,
+        memory_size=1536,
         batch_size=64,
-        alpha=0.0001,
-        gamma=0.99,
-        epochs=1,
+        alpha=0.00005,
+        gamma=0.98,
     ):
         self.policy_network = DQN(
             INPUT_FEATURES,
@@ -42,7 +40,6 @@ class DQNAgent:
             alpha
         )
 
-        self.epochs = epochs
         self.batch_size = batch_size
         self.gamma = gamma
 

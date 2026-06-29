@@ -40,8 +40,8 @@ class ModelEvaluation:
         start_time = time.time()
 
         average_ticks, average_reward, collision_percentage, total_passed_vehicle_count, \
-            average_passed_vehicle_count, max_passed_vehicle_count, total_passed_car_count, \
-            average_passed_car_count, total_passed_train_count, average_passed_train_count, average_flow_rate, \
+            average_passed_vehicle_count, max_passed_vehicle_count, average_active_vehicles, max_active_vehicles, \
+            total_passed_car_count, average_passed_car_count, total_passed_train_count, average_passed_train_count, average_flow_rate, \
             max_flow_rate, average_phase_changes, average_queue_length, max_queue_length, queue_active_percentage, \
             train_average_waiting_ticks, car_average_waiting_ticks\
             = self.__run()
@@ -59,7 +59,9 @@ class ModelEvaluation:
         print(f'Collisions -> {collision_percentage * 100.0:.0f}%\n')
         print(f'Total Vehicles Passed -> {total_passed_vehicle_count}')
         print(f'Average Vehicles Passed -> {average_passed_vehicle_count}')
-        print(f'Max Vehicles Passed -> {max_passed_vehicle_count}\n')
+        print(f'Max Vehicles Passed -> {max_passed_vehicle_count}')
+        print(f'Average Active Vehicles -> {average_active_vehicles}')
+        print(f'Max Active Vehicles -> {max_active_vehicles}\n')
         print(f'\tTotal Cars Passed -> {total_passed_car_count}')
         print(f'\tAverage Cars Passed -> {average_passed_car_count}')
         print(f'\tTotal Trains Passed -> {total_passed_train_count}')
@@ -95,8 +97,14 @@ class ModelEvaluation:
         phase_changes = []
         train_waiting_ticks = []
         car_waiting_ticks = []
+        train_count = []
+        car_count = []
+        total_active_vehicles = 0
+        max_active_vehicles = 0
 
+        total_duration = 0.0
         for game_index in range(self.target_games):
+
             game_ticks = 0
             game_reward = 0.0
             game_phase_changes = 0
@@ -107,6 +115,7 @@ class ModelEvaluation:
             self.vehicle_service.reset()
             current_state = self.vehicle_service.state()
 
+            game_start = time.time()
             while not terminated_flag and not truncated_flag:
                 action = self.select_action(current_state)
 
@@ -126,12 +135,24 @@ class ModelEvaluation:
                 if terminated_flag:
                     total_collisions = total_collisions + 1
 
+                active_vehicles = self.vehicle_service.active_vehicles()
+                total_active_vehicles = total_active_vehicles + active_vehicles
+                if active_vehicles > max_active_vehicles:
+                    max_active_vehicles = active_vehicles
+
+            total_duration = total_duration + time.time() - game_start
+
             for index, queue_length_history in enumerate(self.vehicle_service.queue_length_history):
                 queue_length[index].extend(queue_length_history)
 
-            evaluation_progress = (game_index + 1) / self.target_games
+            games_done = game_index + 1
+            games_left = self.target_games - games_done
+            evaluation_progress = games_done / self.target_games
+
+            average_duration = total_duration / games_done
+            expected_duration = average_duration * games_left
             print(
-                f"\rEvaluating {self.model_name}... Progress -> {evaluation_progress * 100.0:.0f}%",
+                f"\rEvaluating {self.model_name}... Progress -> {evaluation_progress * 100.0:.0f}% | Time Left -> {int(expected_duration)} seconds",
                 end='',
                 flush=True
             )
@@ -155,6 +176,14 @@ class ModelEvaluation:
             car_waiting_ticks.append(
                 self.vehicle_service.total_ticks_waiting_cars()
             )
+            train_count.append(
+                self.vehicle_service.total_trains_passed + len(self.vehicle_service.trains)
+            )
+            car_count.append(
+                self.vehicle_service.total_cars_passed + len(self.vehicle_service.cars)
+            )
+
+        average_active_vehicles = total_active_vehicles / total_ticks if total_ticks > 0 else 0.0
 
         max_queue_length = []
         average_queue_length = []
@@ -193,14 +222,18 @@ class ModelEvaluation:
 
         average_ticks = total_ticks / self.target_games
 
-        train_average_waiting_ticks = sum(train_waiting_ticks) / total_passed_train_count if total_passed_train_count > 0 else 0.0
-        car_average_waiting_ticks = sum(car_waiting_ticks) / total_passed_car_count if total_passed_car_count > 0 else 0.0
+        total_train_count = sum(train_count)
+        total_car_count = sum(car_count)
+
+        train_average_waiting_ticks = sum(train_waiting_ticks) / total_train_count if total_train_count > 0 else 0.0
+        car_average_waiting_ticks = sum(car_waiting_ticks) / total_car_count if total_car_count > 0 else 0.0
 
         average_reward = total_reward / self.target_games
         collision_percentage = total_collisions / self.target_games
 
         return average_ticks, average_reward, collision_percentage, total_passed_vehicle_count, \
-            average_passed_vehicle_count, max_passed_vehicle_count, total_passed_car_count, average_passed_car_count, \
+            average_passed_vehicle_count, max_passed_vehicle_count, average_active_vehicles, max_active_vehicles, \
+            total_passed_car_count, average_passed_car_count, \
             total_passed_train_count, average_passed_train_count, average_flow_rate, max_flow_rate, average_phase_changes, \
             average_queue_length, max_queue_length, queue_active_percentage, train_average_waiting_ticks, car_average_waiting_ticks
 

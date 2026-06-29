@@ -12,11 +12,11 @@ OUTPUT_FEATURES = len(TRAFFIC_LIGHT_PHASES) + 1
 class PPOAgent:
     def __init__(
         self,
-        gamma=0.99,
+        gamma=0.95,
         lambda_=0.95,
         epsilon=0.2,
-        actor_alpha=0.0002,
-        critic_alpha=0.0002
+        actor_alpha=0.0001,
+        critic_alpha=0.0001
     ):
         self.memory = RolloutBuffer()
 

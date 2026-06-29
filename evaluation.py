@@ -27,7 +27,7 @@ basic_evaluation.end()
 print('\n\n\n')
 
 dqn_evaluation = DQNAgentEvaluation(
-    model_path='training_output/dqn/1782574881/model.pt',
+    model_path='training_output/dqn/1782719029/model.pt',
     target_games=EVALUATION_GAMES,
     seed=EVALUATION_SEED
 )
@@ -43,7 +43,7 @@ ppo_evaluation = PPOAgentEvaluation(
     seed=EVALUATION_SEED
 )
 
-ppo_evaluation.run()
+# ppo_evaluation.run()
 ppo_evaluation.end()
 
 print('\n\n\n')

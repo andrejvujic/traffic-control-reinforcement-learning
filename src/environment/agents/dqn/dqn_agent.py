@@ -16,10 +16,10 @@ OUTPUT_FEATURES = len(TRAFFIC_LIGHT_PHASES) + 1
 class DQNAgent:
     def __init__(
         self,
-        memory_size=1536,
+        memory_size=100000,
         batch_size=64,
-        alpha=0.00005,
-        gamma=0.98,
+        alpha=0.0001,
+        gamma=0.99,
     ):
         self.policy_network = DQN(
             INPUT_FEATURES,
@@ -95,6 +95,10 @@ class DQNAgent:
 
         self.optimizer.zero_grad()
         loss.backward()
+        T.nn.utils.clip_grad_norm_(
+            self.policy_network.parameters(),
+            10.0
+        )
         self.optimizer.step()
 
     def save(self, path):

@@ -9,14 +9,19 @@ class DQN(nn.Module):
                 in_features,
                 256
             ),
-            nn.Tanh(),
+            nn.ReLU(),
             nn.Linear(
                 256,
                 256
             ),
-            nn.Tanh(),
+            nn.ReLU(),
             nn.Linear(
                 256,
+                128
+            ),
+            nn.ReLU(),
+            nn.Linear(
+                128,
                 out_features
             )
         )

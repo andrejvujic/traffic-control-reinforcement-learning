@@ -20,8 +20,7 @@ class ReplayBuffer:
 
     def sample(self, batch_size):
         total_experiences = len(self)
-        all_indices = np.arange(0, total_experiences)
-        return np.random.choice(all_indices, batch_size)
+        return np.random.randint(0, total_experiences, batch_size)
 
     def get_tensors(self, indices):
         states = []

@@ -35,16 +35,17 @@ os.makedirs(raw_history_output_path, exist_ok=True)
 os.makedirs(pma_history_output_path, exist_ok=True)
 
 HEADLESS = True
-LOG_INTERVAL = 100
+CHECKPOINT_INTERVAL = 50000
 MOVING_AVERAGE_WINDOW_SIZE = 50
 
-TARGET_GAMES = 10000
-EPSILON_DECAY_GAMES = 8000
+TARGET_TICKS = 2000000
+EXPLORATION_FRACTION = 0.6
 START_EPSILON = 1.0
 END_EPSILON = 0.05
 
 UPDATE_INTERVAL = 1
-SYNC_INTERVAL = 512
+SYNC_INTERVAL = 2000
+LEARNING_STARTS = 5000
 
 total_reward_history = []
 epsilon_history = []
@@ -55,8 +56,9 @@ total_cars_passed_history = []
 total_trains_passed_history = []
 
 
-def calculate_epsilon(game_number):
-    progress = min(game_number / EPSILON_DECAY_GAMES, 1.0)
+def calculate_epsilon(tick_number):
+    exploration_ticks = TARGET_TICKS * EXPLORATION_FRACTION
+    progress = min(tick_number / exploration_ticks, 1.0)
     return START_EPSILON - progress * (START_EPSILON - END_EPSILON)
 
 
@@ -257,11 +259,14 @@ training_ticks = 0
 game_ticks = 0
 ticks_since_sync = 0
 ticks_since_update = 0
+next_checkpoint_tick = CHECKPOINT_INTERVAL
 
 game_reward = 0.0
+game_index = 0
 
 
-for game_index in range(TARGET_GAMES):
+while training_ticks < TARGET_TICKS:
+    game_index = game_index + 1
     game_ticks = 0
     game_reward = 0.0
 
@@ -271,9 +276,10 @@ for game_index in range(TARGET_GAMES):
     vehicle_service.reset()
     current_state = vehicle_service.state()
 
-    epsilon = calculate_epsilon(game_index + 1)
+    epsilon = calculate_epsilon(training_ticks)
 
-    while not terminated_flag and not truncated_flag:
+    while not terminated_flag and not truncated_flag and training_ticks < TARGET_TICKS:
+        epsilon = calculate_epsilon(training_ticks)
         action = agent.next_action(
             current_state,
             epsilon=epsilon
@@ -300,24 +306,26 @@ for game_index in range(TARGET_GAMES):
 
         current_state = new_state
 
-        if ticks_since_update >= UPDATE_INTERVAL:
-            ticks_since_update = 0
-            agent.learn()
+        game_ticks = game_ticks + 1
+        training_ticks = training_ticks + 1
+        ticks_since_sync = ticks_since_sync + 1
+        ticks_since_update = ticks_since_update + 1
+
+        if training_ticks >= LEARNING_STARTS:
+            if ticks_since_update >= UPDATE_INTERVAL:
+                ticks_since_update = 0
+                agent.learn()
 
         if ticks_since_sync >= SYNC_INTERVAL:
             ticks_since_sync = 0
             agent.sync_networks()
 
-        game_ticks = game_ticks + 1
-        ticks_since_sync = ticks_since_sync + 1
-        ticks_since_update = ticks_since_update + 1
-
-    training_ticks = training_ticks + game_ticks
     save_history()
 
-    if game_index == 0 or (game_index + 1) % LOG_INTERVAL == 0:
-        training_log(f'Game Done -> {game_index + 1:5d} / {TARGET_GAMES} | Training Progress -> {(game_index + 1) / TARGET_GAMES * 100.0:.2f}%')
+    if game_index == 1 or training_ticks >= next_checkpoint_tick:
+        training_log(f'Game Done -> {game_index:5d} | Ticks -> {training_ticks:8d} / {TARGET_TICKS} | Training Progress -> {training_ticks / TARGET_TICKS * 100.0:.2f}% | Epsilon -> {epsilon:.3f}')
         save_training_checkpoint()
+        next_checkpoint_tick = training_ticks + CHECKPOINT_INTERVAL
 
 training_duration = time.time() - training_start_time
 training_log(f'Training Done | Took -> {training_duration / 3600.0:.1f} hours | Ticks -> {training_ticks}')

@@ -1,7 +1,5 @@
 import torch.nn as nn
 from torch.optim import Adam
-from torch.distributions import Categorical
-import torch as T
 
 
 class ActorNetwork(nn.Module):
@@ -11,16 +9,16 @@ class ActorNetwork(nn.Module):
         self.network = nn.Sequential(
             nn.Linear(
                 in_features=in_features,
-                out_features=128,
+                out_features=256,
             ),
             nn.ReLU(),
             nn.Linear(
-                in_features=128,
-                out_features=128,
+                in_features=256,
+                out_features=256,
             ),
             nn.ReLU(),
             nn.Linear(
-                in_features=128,
+                in_features=256,
                 out_features=out_features
             ),
         )

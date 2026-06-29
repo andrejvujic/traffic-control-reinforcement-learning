@@ -75,7 +75,7 @@ class DQNAgent:
         if len(self.replay_buffer) < self.batch_size:
             return
 
-        loss_function = nn.MSELoss()
+        loss_function = nn.SmoothL1Loss()
         states, actions, new_states, rewards, terminated_flags = self.replay_buffer.get_tensors(
             self.replay_buffer.sample(self.batch_size)
         )

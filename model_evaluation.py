@@ -8,14 +8,14 @@ import random
 import time
 
 
-class ModelEvaluation:
+class ModelEvaluation(ABC):
     def __init__(
         self,
         model_name,
         target_games,
         seed
     ):
-        random.seed(None)
+        random.seed()
         random.seed(seed)
 
         self.model_name = model_name
@@ -60,7 +60,7 @@ class ModelEvaluation:
         print(f'Total Vehicles Passed -> {total_passed_vehicle_count}')
         print(f'Average Vehicles Passed -> {average_passed_vehicle_count}')
         print(f'Max Vehicles Passed -> {max_passed_vehicle_count}')
-        print(f'Average Active Vehicles -> {average_active_vehicles}')
+        print(f'Average Active Vehicles -> {average_active_vehicles:.2f}')
         print(f'Max Active Vehicles -> {max_active_vehicles}\n')
         print(f'\tTotal Cars Passed -> {total_passed_car_count}')
         print(f'\tAverage Cars Passed -> {average_passed_car_count}')
@@ -152,7 +152,7 @@ class ModelEvaluation:
             average_duration = total_duration / games_done
             expected_duration = average_duration * games_left
             print(
-                f"\rEvaluating {self.model_name}... Progress -> {evaluation_progress * 100.0:.0f}% | Time Left -> {int(expected_duration)} seconds",
+                f"\rEvaluating {self.model_name}... Progress -> {evaluation_progress * 100.0:.0f}% | Approximated Time Left -> {int(expected_duration):5d} seconds",
                 end='',
                 flush=True
             )
@@ -233,8 +233,8 @@ class ModelEvaluation:
 
         return average_ticks, average_reward, collision_percentage, total_passed_vehicle_count, \
             average_passed_vehicle_count, max_passed_vehicle_count, average_active_vehicles, max_active_vehicles, \
-            total_passed_car_count, average_passed_car_count, \
-            total_passed_train_count, average_passed_train_count, average_flow_rate, max_flow_rate, average_phase_changes, \
+            total_passed_car_count, average_passed_car_count, total_passed_train_count, average_passed_train_count, \
+            average_flow_rate, max_flow_rate, average_phase_changes, \
             average_queue_length, max_queue_length, queue_active_percentage, train_average_waiting_ticks, car_average_waiting_ticks
 
     def __calculate_average(self, values):

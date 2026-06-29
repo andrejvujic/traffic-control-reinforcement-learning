@@ -30,13 +30,13 @@ os.makedirs(
 )
 
 HEADLESS = True
-LOG_INTERVAL = 100
+CHECKPOINT_INTERVAL = 50000
 MOVING_AVERAGE_WINDOW_SIZE = 50
 
-TARGET_GAMES = 10000
-UPDATE_INTERVAL = 512
+TARGET_TICKS = 2000000
+ROLLOUT_SIZE = 2048
 BATCH_SIZE = 64
-EPOCHS = 16
+EPOCHS = 8
 
 total_reward_history = []
 tick_count_history = []
@@ -178,8 +178,11 @@ agent = PPOAgent()
 training_ticks = 0
 game_ticks = 0
 game_reward = 0.0
+game_index = 0
+next_checkpoint_tick = CHECKPOINT_INTERVAL
 
-for game_index in range(TARGET_GAMES):
+while training_ticks < TARGET_TICKS:
+    game_index = game_index + 1
     game_ticks = 0
     game_reward = 0.0
 
@@ -189,7 +192,7 @@ for game_index in range(TARGET_GAMES):
     vehicle_service.reset()
     current_state = vehicle_service.state()
 
-    while not terminated_flag and not truncated_flag:
+    while not terminated_flag and not truncated_flag and training_ticks < TARGET_TICKS:
         action, action_log_prob = agent.next_action(
             current_state,
             greedy=False
@@ -201,10 +204,10 @@ for game_index in range(TARGET_GAMES):
         else:
             traffic_light_service.turn_all_red()
 
-        game_ticks = game_ticks + 1
-
         new_state, reward, terminated_flag, truncated_flag = vehicle_service.update()
         game_reward = game_reward + reward
+        game_ticks = game_ticks + 1
+        training_ticks = training_ticks + 1
 
         if not HEADLESS:
             debug_render()
@@ -220,7 +223,7 @@ for game_index in range(TARGET_GAMES):
 
         current_state = new_state
 
-        if len(agent.memory) >= UPDATE_INTERVAL:
+        if len(agent.memory) >= ROLLOUT_SIZE:
             last_value = 0.0 if (terminated_flag or truncated_flag) else agent.evaluate_state(current_state).item()
             agent.learn(
                 epochs=EPOCHS,
@@ -229,12 +232,21 @@ for game_index in range(TARGET_GAMES):
             )
             agent.forget()
 
-    training_ticks = training_ticks + game_ticks
     save_history()
 
-    if game_index == 0 or (game_index + 1) % LOG_INTERVAL == 0:
-        training_log(f'Game Done -> {game_index + 1:5d} / {TARGET_GAMES} | Training Progress -> {(game_index + 1) / TARGET_GAMES * 100.0:.2f}%')
+    if game_index == 1 or training_ticks >= next_checkpoint_tick:
+        training_log(f'Game Done -> {game_index:5d} | Ticks -> {training_ticks:8d} / {TARGET_TICKS} | Training Progress -> {training_ticks / TARGET_TICKS * 100.0:.2f}%')
         save_training_checkpoint()
+        next_checkpoint_tick = training_ticks + CHECKPOINT_INTERVAL
+
+if len(agent.memory) > 0:
+    last_value = 0.0 if (terminated_flag or truncated_flag) else agent.evaluate_state(current_state).item()
+    agent.learn(
+        epochs=EPOCHS,
+        batch_size=BATCH_SIZE,
+        last_value=last_value
+    )
+    agent.forget()
 
 training_duration = time.time() - training_start_time
 training_log(f'Training Done | Took -> {training_duration / 3600.0:.1f} hours | Ticks -> {training_ticks}')

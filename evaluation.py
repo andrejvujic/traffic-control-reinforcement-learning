@@ -21,7 +21,7 @@ basic_evaluation = BasicAgentEvaluation(
     seed=EVALUATION_SEED
 )
 
-# basic_evaluation.run()
+basic_evaluation.run()
 basic_evaluation.end()
 
 print('\n\n\n')
@@ -32,18 +32,18 @@ dqn_evaluation = DQNAgentEvaluation(
     seed=EVALUATION_SEED
 )
 
-dqn_evaluation.run()
+# dqn_evaluation.run()
 dqn_evaluation.end()
 
 print('\n\n\n')
 
 ppo_evaluation = PPOAgentEvaluation(
-    model_path='training_output/ppo/1782599868/model.pt',
+    model_path='training_output/ppo/1782736882/model.pt',
     target_games=EVALUATION_GAMES,
     seed=EVALUATION_SEED
 )
 
-# ppo_evaluation.run()
+ppo_evaluation.run()
 ppo_evaluation.end()
 
 print('\n\n\n')

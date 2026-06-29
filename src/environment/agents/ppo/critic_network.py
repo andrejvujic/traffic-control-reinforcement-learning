@@ -10,16 +10,16 @@ class CriticNetwork(nn.Module):
         self.network = nn.Sequential(
             nn.Linear(
                 in_features,
-                128,
+                256,
             ),
             nn.ReLU(),
             nn.Linear(
-                128,
-                128,
+                256,
+                256,
             ),
             nn.ReLU(),
             nn.Linear(
-                128,
+                256,
                 1
             )
         )

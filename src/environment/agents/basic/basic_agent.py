@@ -2,7 +2,9 @@ from src.game.constants import TOTAL_LANES, CAR_LANES, TRAIN_LANES, TRAFFIC_LIGH
 
 
 class BasicAgent:
-    def __init__(self):
+    def __init__(self, update_interval=32):
+        self.update_interval = update_interval
+
         self.ticks = 0
         self.active_lane_index = 0
 
@@ -66,7 +68,7 @@ class BasicAgent:
         passing_per_lane = self.__passing_per_lane(environment_state)
         anyone_in_intersection = any([vehicle_count > 0 for vehicle_count in passing_per_lane])
 
-        if self.ticks >= self.UPDATE_INTERVAL:
+        if self.ticks >= self.update_interval:
             if anyone_in_intersection:
                 return self.__all_red_action()
 
@@ -77,5 +79,3 @@ class BasicAgent:
             return next_action
 
         return self.previous_action
-
-    UPDATE_INTERVAL = 36

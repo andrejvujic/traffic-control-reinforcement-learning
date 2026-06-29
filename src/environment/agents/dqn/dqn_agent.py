@@ -19,7 +19,8 @@ class DQNAgent:
         memory_size=100000,
         batch_size=64,
         alpha=0.0001,
-        gamma=0.99,
+        gamma=0.95,
+        grad_norm_clipping_th=5.0
     ):
         self.policy_network = DQN(
             INPUT_FEATURES,
@@ -42,6 +43,7 @@ class DQNAgent:
 
         self.batch_size = batch_size
         self.gamma = gamma
+        self.grad_norm_clipping_th = grad_norm_clipping_th
 
         self.sync_networks()
 
@@ -75,7 +77,7 @@ class DQNAgent:
         if len(self.replay_buffer) < self.batch_size:
             return
 
-        loss_function = nn.SmoothL1Loss()
+        loss_function = nn.HuberLoss()
         states, actions, new_states, rewards, terminated_flags = self.replay_buffer.get_tensors(
             self.replay_buffer.sample(self.batch_size)
         )
@@ -97,7 +99,7 @@ class DQNAgent:
         loss.backward()
         T.nn.utils.clip_grad_norm_(
             self.policy_network.parameters(),
-            10.0
+            self.grad_norm_clipping_th,
         )
         self.optimizer.step()
 

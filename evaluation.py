@@ -21,18 +21,18 @@ basic_evaluation = BasicAgentEvaluation(
     seed=EVALUATION_SEED
 )
 
-basic_evaluation.run()
+# basic_evaluation.run()
 basic_evaluation.end()
 
 print('\n\n\n')
 
 dqn_evaluation = DQNAgentEvaluation(
-    model_path='training_output/dqn/1782725493/model.pt',
+    model_path='training_output/dqn/1782752102/model.pt',
     target_games=EVALUATION_GAMES,
     seed=EVALUATION_SEED
 )
 
-# dqn_evaluation.run()
+dqn_evaluation.run()
 dqn_evaluation.end()
 
 print('\n\n\n')

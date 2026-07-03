@@ -1,8 +1,8 @@
-from src.environment.agents.agent_evaluation import AgentEvaluation
+from src.environment.agents.agent_evaluator import AgentEvaluator
 from src.environment.agents.basic.basic_agent import BasicAgent
 
 
-class BasicAgentEvaluation(AgentEvaluation):
+class BasicAgentEvaluator(AgentEvaluator):
     def __init__(self, target_games, seed):
         super().__init__(
             model_name='Basic Agent',

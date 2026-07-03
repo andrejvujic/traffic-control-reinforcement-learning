@@ -1,8 +1,8 @@
-from src.environment.agents.agent_evaluation import AgentEvaluation
+from src.environment.agents.agent_evaluator import AgentEvaluator
 from src.environment.agents.random.random_agent import RandomAgent
 
 
-class RandomAgentEvaluation(AgentEvaluation):
+class RandomAgentEvaluator(AgentEvaluator):
     def __init__(self, target_games, seed):
         super().__init__(
             model_name='Random Agent',

@@ -8,7 +8,7 @@ import random
 import time
 
 
-class AgentEvaluation(ABC):
+class AgentEvaluator(ABC):
     def __init__(
         self,
         model_name,
@@ -101,6 +101,7 @@ class AgentEvaluation(ABC):
             print(f'\t\t- Queue Active -> {queue_active * 100.0:.0f}%')
 
     def end(self):
+        pygame.display.quit()
         pygame.quit()
 
     def __run(self):

@@ -24,7 +24,7 @@ class Game:
 
         self.traffic_light_service = TrafficLightService()
         self.vechicle_service = VehicleService(traffic_light_service=self.traffic_light_service)
-        self.map = Map()
+        self.map_ = Map()
 
         self.dqn_agent = DQNAgent()
         self.dqn_agent.load('training_output/dqn/1782719029/model.pt')
@@ -68,7 +68,7 @@ class Game:
 
             self.surface.fill((0, 0, 0))
 
-            self.map.draw(self.surface)
+            self.map_.draw(self.surface)
             self.traffic_light_service.draw(self.surface)
             self.vechicle_service.draw(self.surface)
 

@@ -161,9 +161,9 @@ while training_ticks < TARGET_TICKS:
                 ticks_since_update = 0
                 agent.learn()
 
-        if ticks_since_sync >= SYNC_INTERVAL:
-            ticks_since_sync = 0
-            agent.sync_networks()
+            if ticks_since_sync >= SYNC_INTERVAL:
+                ticks_since_sync = 0
+                agent.sync_networks()
 
     save_history()
 

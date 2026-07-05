@@ -266,6 +266,13 @@ def save_evaluation_plots():
     )
 
     save_lane_metric_bar_plot(
+        'green_light_percentage_random_agent.jpg',
+        'Random Agent - Green Light Percentage',
+        'Green Light (%)',
+        [green_light * 100.0 for green_light in random_agent_evaluator.green_light_percentage]
+    )
+
+    save_lane_metric_bar_plot(
         'average_queue_length_basic_agent.jpg',
         'Basic Agent - Average Queue Length',
         'Average Queue Length',
@@ -284,6 +291,13 @@ def save_evaluation_plots():
         'Basic Agent - Queue Active Percentage',
         'Queue Active (%)',
         [queue_active * 100.0 for queue_active in basic_agent_evaluator.queue_active_percentage]
+    )
+
+    save_lane_metric_bar_plot(
+        'green_light_percentage_basic_agent.jpg',
+        'Basic Agent - Green Light Percentage',
+        'Green Light (%)',
+        [green_light * 100.0 for green_light in basic_agent_evaluator.green_light_percentage]
     )
 
     save_lane_metric_bar_plot(
@@ -308,6 +322,13 @@ def save_evaluation_plots():
     )
 
     save_lane_metric_bar_plot(
+        'green_light_percentage_dqn_agent.jpg',
+        'DQN Agent - Green Light Percentage',
+        'Green Light (%)',
+        [green_light * 100.0 for green_light in dqn_agent_evaluator.green_light_percentage]
+    )
+
+    save_lane_metric_bar_plot(
         'average_queue_length_ppo_agent.jpg',
         'PPO Agent - Average Queue Length',
         'Average Queue Length',
@@ -326,6 +347,13 @@ def save_evaluation_plots():
         'PPO Agent - Queue Active Percentage',
         'Queue Active (%)',
         [queue_active * 100.0 for queue_active in ppo_agent_evaluator.queue_active_percentage]
+    )
+
+    save_lane_metric_bar_plot(
+        'green_light_percentage_ppo_agent.jpg',
+        'PPO Agent - Green Light Percentage',
+        'Green Light (%)',
+        [green_light * 100.0 for green_light in ppo_agent_evaluator.green_light_percentage]
     )
 
 

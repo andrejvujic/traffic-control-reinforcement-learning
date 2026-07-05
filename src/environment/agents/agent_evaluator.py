@@ -56,6 +56,7 @@ class AgentEvaluator(ABC):
         self.average_queue_length = []
         self.max_queue_length = []
         self.queue_active_percentage = []
+        self.green_light_percentage = []
 
     @abstractmethod
     def select_action(self, state):
@@ -92,13 +93,19 @@ class AgentEvaluator(ABC):
 
         print('Lane Statistics:')
 
-        for index, (average_length, max_length, queue_active) in enumerate(
-            zip(self.average_queue_length, self.max_queue_length, self.queue_active_percentage)
+        for index, (average_length, max_length, queue_active, green_light) in enumerate(
+            zip(
+                self.average_queue_length,
+                self.max_queue_length,
+                self.queue_active_percentage,
+                self.green_light_percentage
+            )
         ):
             print(f'\t{LANE_NAMES[index]}')
             print(f'\t\t- Average Queue Length -> {average_length:.2f}')
             print(f'\t\t- Max Queue Length -> {max_length}')
             print(f'\t\t- Queue Active -> {queue_active * 100.0:.0f}%')
+            print(f'\t\t- Green Light -> {green_light * 100.0:.0f}%')
 
     def end(self):
         pygame.display.quit()
@@ -119,6 +126,7 @@ class AgentEvaluator(ABC):
         car_count = []
         total_active_vehicles = 0
         max_active_vehicles = 0
+        green_light_ticks = [0 for _ in range(TOTAL_LANE_COUNT)]
 
         total_duration = 0.0
         for game_index in range(self.target_games):
@@ -141,6 +149,10 @@ class AgentEvaluator(ABC):
                     self.traffic_light_service.apply_phase(action)
                 else:
                     self.traffic_light_service.turn_all_red()
+
+                for lane_index, is_passable in enumerate(self.traffic_light_service.state()):
+                    if is_passable:
+                        green_light_ticks[lane_index] = green_light_ticks[lane_index] + 1
 
                 current_state, reward, terminated_flag, truncated_flag = self.vehicle_service.update()
 
@@ -199,6 +211,10 @@ class AgentEvaluator(ABC):
 
         self.average_active_vehicles = total_active_vehicles / total_ticks if total_ticks > 0 else 0.0
         self.max_active_vehicles = max_active_vehicles
+        self.green_light_percentage = [
+            green_ticks / total_ticks if total_ticks > 0 else 0.0
+            for green_ticks in green_light_ticks
+        ]
 
         self.max_queue_length = []
         self.average_queue_length = []

@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import time
+import random
 
 start_time = time.time()
 output_path = os.path.join('evaluation_output', f'{start_time:.0f}')
@@ -18,7 +19,7 @@ os.makedirs(
 )
 
 EVALUATION_GAMES = 1000
-EVALUATION_SEED = 42
+EVALUATION_SEED = 42  # random.randint(0, 1_000_000)
 
 BAR_COLOR = '#4c78a8'
 HIGHLIGHT_BAR_COLOR = '#f58518'
@@ -396,13 +397,13 @@ basic_agent_evaluator = BasicAgentEvaluator(
 )
 
 dqn_agent_evaluator = DQNAgentEvaluator(
-    model_path='training_output/dqn/1783277722/model.pt',
+    model_path='training_output/dqn/1782752102/model.pt',
     target_games=EVALUATION_GAMES,
     seed=EVALUATION_SEED
 )
 
 ppo_agent_evaluator = PPOAgentEvaluator(
-    model_path='training_output/dqn/1782752102/model.pt',
+    model_path='training_output/ppo/1782736882/model.pt',
     target_games=EVALUATION_GAMES,
     seed=EVALUATION_SEED
 )

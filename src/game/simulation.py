@@ -63,7 +63,7 @@ class Game:
         self.pause_rect = self.pause_icon.get_rect()
         self.restart_rect = self.restart_icon.get_rect()
 
-        self.speed_options = [5, 15, 30, 60, 120, 2048, 4096, 8192]
+        self.speed_options = [5, 15, 25, 50, 100, 500, 0]
         self.selected_speed_index = 0
         self.paused = False
 
@@ -89,12 +89,13 @@ class Game:
 
         self.selected_agent_index = 0
         self.collision_count = 0
+        self.episode_length_history = []
+        self.max_episode_length = 0
 
     def run(self):
         running = True
 
         current_state = self.vechicle_service.state()
-        episode_length = 0
 
         while running:
             for event in pygame.event.get():
@@ -103,8 +104,7 @@ class Game:
 
                 if self.__handle_pygame_event(event):
                     current_state = self.__reset_simulation()
-                    episode_length = 0
-                    self.collision_count = 0
+                    self.__reset_statistics()
 
             if not running:
                 break
@@ -121,15 +121,14 @@ class Game:
 
             new_state, _, terminated, __class__ = self.vechicle_service.update()
 
-            episode_length = episode_length + 1
-
             if terminated:
+                self.__record_completed_episode()
+
                 self.vechicle_service.reset()
                 self.traffic_light_service.reset()
                 self.collision_count = self.collision_count + 1
 
                 new_state = self.vechicle_service.state()
-                episode_length = 0
 
             current_state = new_state
 
@@ -222,12 +221,43 @@ class Game:
         self.traffic_light_service.reset()
         return self.vechicle_service.state()
 
+    def __reset_statistics(self):
+        self.collision_count = 0
+        self.episode_length_history = []
+        self.max_episode_length = 0
+
+    def __record_completed_episode(self):
+        episode_length = self.vechicle_service.ticks
+        self.episode_length_history.append(episode_length)
+        self.max_episode_length = max(
+            self.max_episode_length,
+            episode_length
+        )
+
+    def __average_episode_length(self):
+        episode_lengths = [
+            *self.episode_length_history,
+            self.vechicle_service.ticks
+        ]
+
+        if not episode_lengths:
+            return 0.0
+
+        return sum(episode_lengths) / len(episode_lengths)
+
+    def __max_episode_length(self):
+        return max(
+            self.max_episode_length,
+            self.vechicle_service.ticks
+        )
+
     def __render(self):
         self.surface.fill((0, 0, 0))
 
         self.surface.set_clip(
             pygame.Rect(0, 0, CANVAS_WIDTH, SCREEN_HEIGHT)
         )
+
         self.map_.draw(self.surface)
         self.traffic_light_service.draw(self.surface)
         self.vechicle_service.draw(self.surface)
@@ -282,8 +312,9 @@ class Game:
         self.surface.blit(agent_name_surface, agent_name_rect)
         self.surface.blit(self.arrow_right_icon, self.arrow_right_rect)
 
+        selected_speed = self.__selected_speed()
         speed_surface = self.font.render(
-            f'Speed: {self.__selected_speed()} ticks/s',
+            f'Speed: {selected_speed} ticks/s' if selected_speed else f'Speed: Max. Possible',
             True,
             (255, 255, 255),
             (0, 0, 0)
@@ -373,9 +404,25 @@ class Game:
         self.surface.blit(text_surface, (hud_x, hud_y + line_height * 11))
 
         text_surface = self.font.render(
-            f'Collisions: {self.collision_count:5d}',
+            f'Avg. Episode: {self.__average_episode_length():.1f} ticks',
             True,
             (255, 255, 255),
             (0, 0, 0)
         )
         self.surface.blit(text_surface, (hud_x, hud_y + line_height * 12))
+
+        text_surface = self.font.render(
+            f'Max. Episode: {self.__max_episode_length():5d} ticks',
+            True,
+            (255, 255, 255),
+            (0, 0, 0)
+        )
+        self.surface.blit(text_surface, (hud_x, hud_y + line_height * 13))
+
+        text_surface = self.font.render(
+            f'Collisions: {self.collision_count:5d}',
+            True,
+            (255, 255, 255),
+            (0, 0, 0)
+        )
+        self.surface.blit(text_surface, (hud_x, hud_y + line_height * 14))

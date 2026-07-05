@@ -14,7 +14,7 @@ class PPOAgentEvaluator(AgentEvaluator):
         self.agent.load(model_path)
 
     def select_action(self, state):
-        action, _ = self.agent.next_action(
+        action = self.agent.next_action(
             state,
             greedy=True
         )

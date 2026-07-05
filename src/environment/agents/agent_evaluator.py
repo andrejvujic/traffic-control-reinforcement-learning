@@ -57,6 +57,7 @@ class AgentEvaluator(ABC):
         self.max_queue_length = []
         self.queue_active_percentage = []
         self.green_light_percentage = []
+        self.passed_vehicle_count_per_lane = []
 
     @abstractmethod
     def select_action(self, state):
@@ -93,12 +94,13 @@ class AgentEvaluator(ABC):
 
         print('Lane Statistics:')
 
-        for index, (average_length, max_length, queue_active, green_light) in enumerate(
+        for index, (average_length, max_length, queue_active, green_light, passed_count) in enumerate(
             zip(
                 self.average_queue_length,
                 self.max_queue_length,
                 self.queue_active_percentage,
-                self.green_light_percentage
+                self.green_light_percentage,
+                self.passed_vehicle_count_per_lane
             )
         ):
             print(f'\t{LANE_NAMES[index]}')
@@ -106,6 +108,7 @@ class AgentEvaluator(ABC):
             print(f'\t\t- Max Queue Length -> {max_length}')
             print(f'\t\t- Queue Active -> {queue_active * 100.0:.0f}%')
             print(f'\t\t- Green Light -> {green_light * 100.0:.0f}%')
+            print(f'\t\t- Vehicles Passed -> {passed_count}')
 
     def end(self):
         pygame.display.quit()
@@ -127,6 +130,7 @@ class AgentEvaluator(ABC):
         total_active_vehicles = 0
         max_active_vehicles = 0
         green_light_ticks = [0 for _ in range(TOTAL_LANE_COUNT)]
+        passed_vehicle_count_per_lane = [0 for _ in range(TOTAL_LANE_COUNT)]
 
         total_duration = 0.0
         for game_index in range(self.target_games):
@@ -175,6 +179,9 @@ class AgentEvaluator(ABC):
             for index, queue_length_history in enumerate(self.vehicle_service.queue_length_history):
                 queue_length[index].extend(queue_length_history)
 
+            for index, passed_count in enumerate(self.vehicle_service.passed_vehicle_count_per_lane):
+                passed_vehicle_count_per_lane[index] = passed_vehicle_count_per_lane[index] + passed_count
+
             games_done = game_index + 1
             games_left = self.target_games - games_done
             evaluation_progress = games_done / self.target_games
@@ -215,6 +222,7 @@ class AgentEvaluator(ABC):
             green_ticks / total_ticks if total_ticks > 0 else 0.0
             for green_ticks in green_light_ticks
         ]
+        self.passed_vehicle_count_per_lane = passed_vehicle_count_per_lane
 
         self.max_queue_length = []
         self.average_queue_length = []

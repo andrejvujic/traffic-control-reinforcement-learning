@@ -273,6 +273,13 @@ def save_evaluation_plots():
     )
 
     save_lane_metric_bar_plot(
+        'passed_vehicles_per_lane_random_agent.jpg',
+        'Random Agent - Passed Vehicles Per Lane',
+        'Vehicles Passed',
+        random_agent_evaluator.passed_vehicle_count_per_lane
+    )
+
+    save_lane_metric_bar_plot(
         'average_queue_length_basic_agent.jpg',
         'Basic Agent - Average Queue Length',
         'Average Queue Length',
@@ -298,6 +305,13 @@ def save_evaluation_plots():
         'Basic Agent - Green Light Percentage',
         'Green Light (%)',
         [green_light * 100.0 for green_light in basic_agent_evaluator.green_light_percentage]
+    )
+
+    save_lane_metric_bar_plot(
+        'passed_vehicles_per_lane_basic_agent.jpg',
+        'Basic Agent - Passed Vehicles Per Lane',
+        'Vehicles Passed',
+        basic_agent_evaluator.passed_vehicle_count_per_lane
     )
 
     save_lane_metric_bar_plot(
@@ -329,6 +343,13 @@ def save_evaluation_plots():
     )
 
     save_lane_metric_bar_plot(
+        'passed_vehicles_per_lane_dqn_agent.jpg',
+        'DQN Agent - Passed Vehicles Per Lane',
+        'Vehicles Passed',
+        dqn_agent_evaluator.passed_vehicle_count_per_lane
+    )
+
+    save_lane_metric_bar_plot(
         'average_queue_length_ppo_agent.jpg',
         'PPO Agent - Average Queue Length',
         'Average Queue Length',
@@ -356,6 +377,13 @@ def save_evaluation_plots():
         [green_light * 100.0 for green_light in ppo_agent_evaluator.green_light_percentage]
     )
 
+    save_lane_metric_bar_plot(
+        'passed_vehicles_per_lane_ppo_agent.jpg',
+        'PPO Agent - Passed Vehicles Per Lane',
+        'Vehicles Passed',
+        ppo_agent_evaluator.passed_vehicle_count_per_lane
+    )
+
 
 random_agent_evaluator = RandomAgentEvaluator(
     target_games=EVALUATION_GAMES,
@@ -368,13 +396,13 @@ basic_agent_evaluator = BasicAgentEvaluator(
 )
 
 dqn_agent_evaluator = DQNAgentEvaluator(
-    model_path='training_output/dqn/1782752102/model.pt',
+    model_path='training_output/dqn/1783277722/model.pt',
     target_games=EVALUATION_GAMES,
     seed=EVALUATION_SEED
 )
 
 ppo_agent_evaluator = PPOAgentEvaluator(
-    model_path='training_output/ppo/1782736882/model.pt',
+    model_path='training_output/dqn/1782752102/model.pt',
     target_games=EVALUATION_GAMES,
     seed=EVALUATION_SEED
 )

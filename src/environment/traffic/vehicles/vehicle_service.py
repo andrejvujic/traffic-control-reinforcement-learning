@@ -36,6 +36,7 @@ class VehicleService:
         self.train_spawner = TrainSpawner(assets_directory='assets/trains')
 
         self.queue_length_history = [[] for _ in ALL_LANES]
+        self.passed_vehicle_count_per_lane = [0 for _ in ALL_LANES]
 
     def reset(self):
         self.cars = []
@@ -51,6 +52,7 @@ class VehicleService:
         self.passed_trains_ticks_waiting = 0
 
         self.queue_length_history = [[] for _ in ALL_LANES]
+        self.passed_vehicle_count_per_lane = [0 for _ in ALL_LANES]
 
     def update(self):
         self.ticks = self.ticks + 1
@@ -149,11 +151,13 @@ class VehicleService:
         self.total_cars_passed = self.total_cars_passed + 1
         self.cars_passed_this_tick = self.cars_passed_this_tick + 1
         self.passed_cars_ticks_waiting = self.passed_cars_ticks_waiting + car.ticks_waiting
+        self.passed_vehicle_count_per_lane[car.lane_index] = self.passed_vehicle_count_per_lane[car.lane_index] + 1
 
     def __mark_train_passed(self, train: Train):
         self.total_trains_passed = self.total_trains_passed + 1
         self.trains_passed_this_tick = self.trains_passed_this_tick + 1
         self.passed_trains_ticks_waiting = self.passed_trains_ticks_waiting + train.ticks_waiting
+        self.passed_vehicle_count_per_lane[train.lane_index] = self.passed_vehicle_count_per_lane[train.lane_index] + 1
 
     def state(self):
         return [

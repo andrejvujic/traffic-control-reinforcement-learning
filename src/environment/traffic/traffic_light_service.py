@@ -1,5 +1,5 @@
 from src.environment.traffic.traffic_light import TrafficLight
-from src.game.constants import TOTAL_LANES, TRAFFIC_LIGHT_POSITIONS, CELL_SIZE
+from src.game.constants import TOTAL_LANE_COUNT, TRAFFIC_LIGHT_POSITIONS, CELL_SIZE
 from src.game.constants import TRAFFIC_LIGHT_PHASES
 from src.game.colors import TL_ON_COLOR, TL_OFF_COLOR
 import pygame
@@ -8,7 +8,7 @@ import pygame
 class TrafficLightService:
     def __init__(self):
         self.traffic_lights: list[TrafficLight] = [
-            TrafficLight(lane_index=lane_index) for lane_index in range(TOTAL_LANES)
+            TrafficLight(lane_index=lane_index) for lane_index in range(TOTAL_LANE_COUNT)
         ]
 
         self.phase_changes = 0

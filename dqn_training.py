@@ -2,7 +2,7 @@ from src.environment.traffic.vehicle_service import VehicleService
 from src.environment.traffic.traffic_light_service import TrafficLightService
 from src.game.map import Map
 from src.environment.agents.dqn.dqn_agent import DQNAgent
-from src.game.constants import SCREEN_WIDTH, SCREEN_HEIGHT
+from src.game.constants import CANVAS_WIDTH, CANVAS_HEIGHT
 from src.game.constants import TRAFFIC_LIGHT_PHASES
 from src.game.utilities import append_training_history, log_training_message, render_debug_frame
 from src.game.utilities import save_agent_training_checkpoint
@@ -13,7 +13,7 @@ import os
 
 pygame.display.init()
 surface = pygame.display.set_mode(
-    (SCREEN_WIDTH, SCREEN_HEIGHT)
+    (CANVAS_WIDTH, CANVAS_HEIGHT)
 )
 clock = pygame.time.Clock()
 

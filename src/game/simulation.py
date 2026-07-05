@@ -7,6 +7,9 @@ from src.game.map import Map
 
 from src.environment.traffic.traffic_light_service import TrafficLightService
 from src.environment.traffic.vehicle_service import VehicleService
+
+from src.environment.agents.agent import Agent
+from src.environment.agents.random.random_agent import RandomAgent
 from src.environment.agents.basic.basic_agent import BasicAgent
 from src.environment.agents.dqn.dqn_agent import DQNAgent
 from src.environment.agents.ppo.ppo_agent import PPOAgent
@@ -17,20 +20,33 @@ class Game:
         pygame.init()
 
         pygame.display.set_caption('Traffic Simulation')
-        self.surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.surface = pygame.display.set_mode(
+            (SCREEN_WIDTH, SCREEN_HEIGHT)
+        )
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont(name='Consolas', size=24)
-        self.should_render_hud = False
 
         self.traffic_light_service = TrafficLightService()
         self.vechicle_service = VehicleService(traffic_light_service=self.traffic_light_service)
         self.map_ = Map()
 
-        self.dqn_agent = DQNAgent()
-        self.dqn_agent.load('training_output/dqn/1782719029/model.pt')
+        random_agent = RandomAgent()
+        basic_agent = BasicAgent()
 
-        self.ppo_agent = PPOAgent()
-        self.ppo_agent.load('training_output/ppo/1782599868/model.pt')
+        dqn_agent = DQNAgent()
+        dqn_agent.load('training_output/dqn/1782752102/model.pt')
+
+        ppo_agent = PPOAgent()
+        ppo_agent.load('training_output/ppo/1782736882/model.pt')
+
+        self.agents: list[Agent] = [
+            random_agent,
+            basic_agent,
+            dqn_agent,
+            ppo_agent
+        ]
+
+        self.selected_agent_index = 0
 
     def run(self):
         running = True
@@ -42,12 +58,8 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    self.handle_toggle_render_hud_click(event.pos)
 
-            action = self.dqn_agent.next_action(current_state)
-            # action, _ = self.ppo_agent.next_action(current_state, greedy=True)
-
+            action = self.__next_action(current_state)
             if action < len(TRAFFIC_LIGHT_PHASES):
                 self.traffic_light_service.apply_phase(action)
             else:
@@ -66,23 +78,21 @@ class Game:
 
             current_state = new_state
 
-            self.surface.fill((0, 0, 0))
+            self.__render()
 
-            self.map_.draw(self.surface)
-            self.traffic_light_service.draw(self.surface)
-            self.vechicle_service.draw(self.surface)
+    def __next_action(self, current_state):
+        selected_agent = self.agents[self.selected_agent_index]
+        return selected_agent.next_action(current_state)
 
-            if self.should_render_hud:
-                self.render_hud()
+    def __render(self):
+        self.surface.fill((0, 0, 0))
 
-            pygame.display.flip()
-            self.clock.tick(60)
+        self.map_.draw(self.surface)
+        self.traffic_light_service.draw(self.surface)
+        self.vechicle_service.draw(self.surface)
 
-    def handle_toggle_render_hud_click(self, click_position):
-        click_x, click_y = click_position
-
-        if click_x <= 96 and click_y <= 96:
-            self.should_render_hud = not self.should_render_hud
+        pygame.display.flip()
+        self.clock.tick(60)
 
     def render_hud(self):
         text_surface = self.font.render(

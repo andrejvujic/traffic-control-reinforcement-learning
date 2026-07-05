@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import pygame
 from src.environment.traffic.vehicle_service import VehicleService
 from src.environment.traffic.traffic_light_service import TrafficLightService
-from src.game.constants import SCREEN_WIDTH, SCREEN_HEIGHT, TRAFFIC_LIGHT_PHASES, TOTAL_LANES, LANE_NAMES
+from src.game.constants import CANVAS_WIDTH, CANVAS_HEIGHT, TRAFFIC_LIGHT_PHASES, TOTAL_LANE_COUNT, LANE_NAMES
 from src.game.map import Map
 import random
 import time
@@ -23,7 +23,7 @@ class AgentEvaluator(ABC):
 
         pygame.display.init()
         pygame.display.set_mode(
-            (SCREEN_WIDTH, SCREEN_HEIGHT)
+            (CANVAS_WIDTH, CANVAS_HEIGHT)
         )
 
         self.traffic_light_service = TrafficLightService()
@@ -111,7 +111,7 @@ class AgentEvaluator(ABC):
         passed_vehicle_count = []
         passed_car_count = []
         passed_train_count = []
-        queue_length = [[] for _ in range(TOTAL_LANES)]
+        queue_length = [[] for _ in range(TOTAL_LANE_COUNT)]
         phase_changes = []
         train_waiting_ticks = []
         car_waiting_ticks = []

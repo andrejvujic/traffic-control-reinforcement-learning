@@ -1,7 +1,10 @@
 from src.environment.agents.ppo.rollout_buffer import RolloutBuffer
 from src.environment.agents.ppo.actor_network import ActorNetwork
 from src.environment.agents.ppo.critic_network import CriticNetwork
+from src.environment.agents.agent import Agent
+
 from src.game.constants import TRAFFIC_LIGHT_PHASES
+
 import torch as T
 from torch.distributions import Categorical
 
@@ -9,7 +12,7 @@ INPUT_FEATURES = 40
 OUTPUT_FEATURES = len(TRAFFIC_LIGHT_PHASES) + 1
 
 
-class PPOAgent:
+class PPOAgent(Agent):
     def __init__(
         self,
         gamma=0.95,
@@ -18,6 +21,9 @@ class PPOAgent:
         actor_alpha=0.0001,
         critic_alpha=0.0001
     ):
+        super().__init__(
+            name='PPO'
+        )
         self.memory = RolloutBuffer()
 
         self.actor = ActorNetwork(
@@ -74,10 +80,16 @@ class PPOAgent:
 
             if not greedy:
                 action = dist.sample()
-                return action.item(), dist.log_prob(action).item()
+                return action.item()
 
             action = logits.argmax()
-            return action.item(), dist.log_prob(action).item()
+            return action.item()
+
+    def action_log_prob(self, state, action):
+        state_tensor = T.tensor(state, dtype=T.float32)
+        logits = self.actor(state_tensor)
+        dist = Categorical(logits=logits)
+        return dist.log_prob(action).item()
 
     def evaluate_state(self, state):
         if not isinstance(state, T.Tensor):

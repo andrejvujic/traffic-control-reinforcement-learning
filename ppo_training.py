@@ -2,7 +2,7 @@ from src.environment.traffic.vehicle_service import VehicleService
 from src.environment.traffic.traffic_light_service import TrafficLightService
 from src.game.map import Map
 from src.environment.agents.ppo.ppo_agent import PPOAgent
-from src.game.constants import SCREEN_WIDTH, SCREEN_HEIGHT
+from src.game.constants import CANVAS_WIDTH, CANVAS_HEIGHT
 from src.game.constants import TRAFFIC_LIGHT_PHASES
 from src.game.utilities import append_training_history, log_training_message, render_debug_frame
 from src.game.utilities import save_agent_training_checkpoint
@@ -12,7 +12,7 @@ import time
 import os
 
 pygame.display.init()
-surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+surface = pygame.display.set_mode((CANVAS_WIDTH, CANVAS_HEIGHT))
 clock = pygame.time.Clock()
 
 traffic_light_service = TrafficLightService()
@@ -25,19 +25,25 @@ training_start_time = time.time()
 
 output_path = os.path.join('training_output', 'ppo', f'{training_start_time:.0f}')
 model_path = os.path.join(output_path, 'model.pt')
+
+pma_history_output_path = os.path.join(output_path, 'pma')
+raw_history_output_path = os.path.join(output_path, 'raw')
+
 os.makedirs(
     output_path,
     exist_ok=True
 )
+os.makedirs(raw_history_output_path, exist_ok=True)
+os.makedirs(pma_history_output_path, exist_ok=True)
 
 HEADLESS = True
 CHECKPOINT_INTERVAL = 50000
 MOVING_AVERAGE_WINDOW_SIZE = 50
 
 TARGET_TICKS = 2000000
-ROLLOUT_SIZE = 2048
+ROLLOUT_SIZE = 1024
 BATCH_SIZE = 64
-EPOCHS = 8
+EPOCHS = 16
 
 total_reward_history = []
 tick_count_history = []
@@ -51,14 +57,15 @@ def save_training_checkpoint():
     save_agent_training_checkpoint(
         agent,
         model_path,
-        output_path,
+        pma_history_output_path,
         MOVING_AVERAGE_WINDOW_SIZE,
         total_reward_history,
         tick_count_history,
         cars_waiting_ticks_history,
         trains_waiting_ticks_history,
         total_cars_passed_history,
-        total_trains_passed_history
+        total_trains_passed_history,
+        raw_history_output_path
     )
 
 
@@ -95,10 +102,12 @@ while training_ticks < TARGET_TICKS:
     current_state = vehicle_service.state()
 
     while not terminated_flag and not truncated_flag and training_ticks < TARGET_TICKS:
-        action, action_log_prob = agent.next_action(
+        action = agent.next_action(
             current_state,
             greedy=False
         )
+        action_log_prob = agent.action_log_prob(current_state, action)
+
         value = agent.evaluate_state(current_state).item()
 
         if action < len(TRAFFIC_LIGHT_PHASES):

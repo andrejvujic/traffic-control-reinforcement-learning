@@ -346,7 +346,7 @@ dqn_agent_evaluator = DQNAgentEvaluator(
 )
 
 ppo_agent_evaluator = PPOAgentEvaluator(
-    model_path='training_output/ppo/1783246289/model.pt',
+    model_path='training_output/ppo/1782736882/model.pt',
     target_games=EVALUATION_GAMES,
     seed=EVALUATION_SEED
 )

@@ -88,6 +88,7 @@ class Game:
         ]
 
         self.selected_agent_index = 0
+        self.collision_count = 0
 
     def run(self):
         running = True
@@ -103,6 +104,7 @@ class Game:
                 if self.__handle_pygame_event(event):
                     current_state = self.__reset_simulation()
                     episode_length = 0
+                    self.collision_count = 0
 
             if not running:
                 break
@@ -124,6 +126,7 @@ class Game:
             if terminated:
                 self.vechicle_service.reset()
                 self.traffic_light_service.reset()
+                self.collision_count = self.collision_count + 1
 
                 new_state = self.vechicle_service.state()
                 episode_length = 0
@@ -368,3 +371,11 @@ class Game:
             (0, 0, 0)
         )
         self.surface.blit(text_surface, (hud_x, hud_y + line_height * 11))
+
+        text_surface = self.font.render(
+            f'Collisions: {self.collision_count:5d}',
+            True,
+            (255, 255, 255),
+            (0, 0, 0)
+        )
+        self.surface.blit(text_surface, (hud_x, hud_y + line_height * 12))

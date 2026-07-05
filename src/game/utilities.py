@@ -1,5 +1,6 @@
 import random
 import os
+import pygame
 
 
 def random_bool(true_probability=0.5):
@@ -128,7 +129,7 @@ def save_training_history_plots(
         )
 
 
-def save_agent_training_checkpoint(
+def save_training_checkpoint(
     agent,
     model_path,
     output_path,
@@ -191,13 +192,11 @@ def append_training_history(
 
 
 def render_debug_frame(surface, map_, traffic_light_service, vehicle_service, clock):
-    import pygame
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             raise SystemExit
 
-    surface.fill('black')
+    surface.fill((0, 0, 0))
 
     map_.draw(surface)
     traffic_light_service.draw(surface)

@@ -5,7 +5,7 @@ from src.environment.agents.dqn.dqn_agent import DQNAgent
 from src.game.constants import CANVAS_WIDTH, CANVAS_HEIGHT
 from src.game.constants import TRAFFIC_LIGHT_PHASES
 from src.game.utilities import append_training_history, log_training_message, render_debug_frame
-from src.game.utilities import save_agent_training_checkpoint
+from src.game.utilities import save_training_checkpoint
 
 import pygame
 import time
@@ -36,17 +36,17 @@ os.makedirs(raw_history_output_path, exist_ok=True)
 os.makedirs(pma_history_output_path, exist_ok=True)
 
 HEADLESS = True
-CHECKPOINT_INTERVAL = 50000
+CHECKPOINT_INTERVAL = 50_000
 MOVING_AVERAGE_WINDOW_SIZE = 50
 
-TARGET_TICKS = 2000000
+TARGET_TICKS = 2_000_000
 EXPLORATION_FRACTION = 0.6
 START_EPSILON = 1.0
 END_EPSILON = 0.05
 
 UPDATE_INTERVAL = 1
-SYNC_INTERVAL = 2000
-LEARNING_STARTS = 5000
+SYNC_INTERVAL = 2_000
+LEARNING_STARTS = 5_000
 
 total_reward_history = []
 epsilon_history = []
@@ -57,14 +57,14 @@ total_cars_passed_history = []
 total_trains_passed_history = []
 
 
-def calculate_epsilon(tick_number):
+def calculate_epsilon(training_ticks):
     exploration_ticks = TARGET_TICKS * EXPLORATION_FRACTION
-    progress = min(tick_number / exploration_ticks, 1.0)
+    progress = min(training_ticks / exploration_ticks, 1.0)
     return START_EPSILON - progress * (START_EPSILON - END_EPSILON)
 
 
-def save_training_checkpoint():
-    save_agent_training_checkpoint(
+def save_checkpoint():
+    save_training_checkpoint(
         agent,
         model_path,
         pma_history_output_path,
@@ -169,11 +169,11 @@ while training_ticks < TARGET_TICKS:
 
     if game_index == 1 or training_ticks >= next_checkpoint_tick:
         log_training_message(output_path, f'Game Done -> {game_index:5d} | Ticks -> {training_ticks:8d} / {TARGET_TICKS} | Training Progress -> {training_ticks / TARGET_TICKS * 100.0:.2f}% | Epsilon -> {epsilon:.3f}')
-        save_training_checkpoint()
+        save_checkpoint()
         next_checkpoint_tick = training_ticks + CHECKPOINT_INTERVAL
 
 training_duration = time.time() - training_start_time
 log_training_message(output_path, f'Training Done | Took -> {training_duration / 3600.0:.1f} hours | Ticks -> {training_ticks}')
 
-save_training_checkpoint()
+save_checkpoint()
 log_training_message(output_path, f'Model Location -> \'{model_path}\'')

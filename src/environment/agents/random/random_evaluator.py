@@ -13,4 +13,4 @@ class RandomAgentEvaluator(AgentEvaluator):
         self.agent = RandomAgent()
 
     def select_action(self, _):
-        return self.agent.next_action()
+        return self.agent.next_action(_)

@@ -5,14 +5,16 @@ from src.environment.agents.ppo.ppo_agent import PPOAgent
 from src.game.constants import CANVAS_WIDTH, CANVAS_HEIGHT
 from src.game.constants import TRAFFIC_LIGHT_PHASES
 from src.game.utilities import append_training_history, log_training_message, render_debug_frame
-from src.game.utilities import save_agent_training_checkpoint
+from src.game.utilities import save_training_checkpoint
 
 import pygame
 import time
 import os
 
 pygame.display.init()
-surface = pygame.display.set_mode((CANVAS_WIDTH, CANVAS_HEIGHT))
+surface = pygame.display.set_mode(
+    (CANVAS_WIDTH, CANVAS_HEIGHT)
+)
 clock = pygame.time.Clock()
 
 traffic_light_service = TrafficLightService()
@@ -40,10 +42,10 @@ HEADLESS = True
 CHECKPOINT_INTERVAL = 50000
 MOVING_AVERAGE_WINDOW_SIZE = 50
 
-TARGET_TICKS = 2000000
-ROLLOUT_SIZE = 1024
+TARGET_TICKS = 2500000
+ROLLOUT_SIZE = 2048
 BATCH_SIZE = 64
-EPOCHS = 16
+EPOCHS = 8
 
 total_reward_history = []
 tick_count_history = []
@@ -53,8 +55,8 @@ total_cars_passed_history = []
 total_trains_passed_history = []
 
 
-def save_training_checkpoint():
-    save_agent_training_checkpoint(
+def save_checkpoint():
+    save_training_checkpoint(
         agent,
         model_path,
         pma_history_output_path,
@@ -102,11 +104,10 @@ while training_ticks < TARGET_TICKS:
     current_state = vehicle_service.state()
 
     while not terminated_flag and not truncated_flag and training_ticks < TARGET_TICKS:
-        action = agent.next_action(
+        action, action_log_prob = agent.next_action(
             current_state,
             greedy=False
         )
-        action_log_prob = agent.action_log_prob(current_state, action)
 
         value = agent.evaluate_state(current_state).item()
 
@@ -153,10 +154,10 @@ while training_ticks < TARGET_TICKS:
 
     if game_index == 1 or training_ticks >= next_checkpoint_tick:
         log_training_message(output_path, f'Game Done -> {game_index:5d} | Ticks -> {training_ticks:8d} / {TARGET_TICKS} | Training Progress -> {training_ticks / TARGET_TICKS * 100.0:.2f}%')
-        save_training_checkpoint()
+        save_checkpoint()
         next_checkpoint_tick = training_ticks + CHECKPOINT_INTERVAL
 
-if len(agent.memory) > 0:
+if len(agent.memory):
     last_value = 0.0 if (terminated_flag or truncated_flag) else agent.evaluate_state(current_state).item()
     agent.learn(
         epochs=EPOCHS,
@@ -168,5 +169,5 @@ if len(agent.memory) > 0:
 training_duration = time.time() - training_start_time
 log_training_message(output_path, f'Training Done | Took -> {training_duration / 3600.0:.1f} hours | Ticks -> {training_ticks}')
 
-save_training_checkpoint()
+save_checkpoint()
 log_training_message(output_path, f'Model Location -> \'{model_path}\'')

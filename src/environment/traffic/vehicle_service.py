@@ -213,7 +213,7 @@ class VehicleService:
             if not previously_passable and now_passable:
                 if self.__did_make_safe_move(lane_index, total_passing_cars, total_passing_trains) and appoarching_vehicles_per_lane[lane_index] > 0:
                     if lane_index in CAR_LANES:
-                        reward = reward + 7.0 + min(
+                        reward = reward + 12.0 + min(  # For DQN: 7.0
                             appoarching_vehicles_per_lane[lane_index],
                             self.REWARD_VEHICLE_COUNT_LIMIT
                         )
@@ -244,14 +244,14 @@ class VehicleService:
         ):
             if passable and waiting_vehicles > 0:
                 if lane_index in CAR_LANES:
-                    reward = reward + 2.5 * min(waiting_vehicles, self.REWARD_VEHICLE_COUNT_LIMIT)
+                    reward = reward + 6.5 * min(waiting_vehicles, self.REWARD_VEHICLE_COUNT_LIMIT)  # For DQN: 2.5
                     continue
 
                 reward = reward + 120.0 * waiting_vehicles
 
             if not passable and waiting_vehicles > 0:
                 if lane_index in CAR_LANES:
-                    reward = reward - 1.75 * min(waiting_vehicles, self.REWARD_VEHICLE_COUNT_LIMIT)
+                    reward = reward - 4.0 * min(waiting_vehicles, self.REWARD_VEHICLE_COUNT_LIMIT)  # For DQN: 1.75
                     continue
 
                 reward = reward - 100.0 * waiting_vehicles
@@ -276,7 +276,7 @@ class VehicleService:
             else:
                 reward = reward + 60.0
 
-        reward = reward + 40.0 * self.cars_passed_this_tick
+        reward = reward + 30.0 * self.cars_passed_this_tick  # For DQN: 40.0
         reward = reward + 300.0 * self.trains_passed_this_tick
 
         return reward

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, asdict
-from src.environment.traffic.checkpoint import Checkpoint
+from src.environment.traffic.vehicles.checkpoint import Checkpoint
 
 
 @dataclass

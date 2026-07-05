@@ -1,8 +1,8 @@
-from src.environment.traffic.car import Car
-from src.environment.traffic.car_spawner import CarSpawner
-from src.environment.traffic.train import Train
-from src.environment.traffic.train_spawner import TrainSpawner
-from src.environment.traffic.traffic_light_service import TrafficLightService
+from src.environment.traffic.vehicles.cars.car import Car
+from src.environment.traffic.vehicles.cars.car_spawner import CarSpawner
+from src.environment.traffic.vehicles.trains.train import Train
+from src.environment.traffic.vehicles.trains.train_spawner import TrainSpawner
+from src.environment.traffic.traffic_lights.traffic_light_service import TrafficLightService
 
 from src.game.constants import TRAFFIC_LIGHT_PHASES, MAX_TICKS_PER_EPISODE
 from src.game.constants import VEHICLE_STOP_POSITIONS, CAR_LANES, TRAIN_LANES, ALL_LANES

@@ -1,5 +1,5 @@
-from src.environment.traffic.vehicle_service import VehicleService
-from src.environment.traffic.traffic_light_service import TrafficLightService
+from src.environment.traffic.vehicles.vehicle_service import VehicleService
+from src.environment.traffic.traffic_lights.traffic_light_service import TrafficLightService
 from src.game.map import Map
 from src.environment.agents.ppo.ppo_agent import PPOAgent
 from src.game.constants import CANVAS_WIDTH, CANVAS_HEIGHT

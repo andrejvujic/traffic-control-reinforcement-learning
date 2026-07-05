@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from src.environment.traffic.vehicle_state import VehicleState
+from src.environment.traffic.vehicles.vehicle_state import VehicleState
 import pygame
 
 

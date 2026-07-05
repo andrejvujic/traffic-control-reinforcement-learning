@@ -6,8 +6,8 @@ from src.game.constants import CELL_SIZE, TRAFFIC_LIGHT_POSITIONS
 from src.game.constants import TRAFFIC_LIGHT_PHASES
 from src.game.map import Map
 
-from src.environment.traffic.traffic_light_service import TrafficLightService
-from src.environment.traffic.vehicle_service import VehicleService
+from src.environment.traffic.traffic_lights.traffic_light_service import TrafficLightService
+from src.environment.traffic.vehicles.vehicle_service import VehicleService
 
 from src.environment.agents.agent import Agent
 from src.environment.agents.random.random_agent import RandomAgent

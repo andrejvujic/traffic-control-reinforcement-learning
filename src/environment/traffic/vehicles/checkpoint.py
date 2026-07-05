@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from src.environment.traffic.vehicle import Vehicle
+from src.environment.traffic.vehicles.vehicle import Vehicle
 
 
 class Checkpoint:

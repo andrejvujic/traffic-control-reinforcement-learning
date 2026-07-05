@@ -1,5 +1,5 @@
-from src.environment.traffic.vehicle_spawner import VehicleSpawner
-from src.environment.traffic.car import Car
+from src.environment.traffic.vehicles.vehicle_spawner import VehicleSpawner
+from src.environment.traffic.vehicles.cars.car import Car
 from src.game.constants import VEHICLE_SPAWN_POSITIONS, CAR_SPAWN_CONFIGURATIONS, CELL_SIZE
 
 import pygame

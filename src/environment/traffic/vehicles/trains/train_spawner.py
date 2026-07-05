@@ -1,6 +1,6 @@
 from src.game.constants import VEHICLE_SPAWN_POSITIONS, TRAIN_SPAWN_CONFIGURATIONS, CELL_SIZE, TRAIN_LENGTH
-from src.environment.traffic.train import Train
-from src.environment.traffic.vehicle_spawner import VehicleSpawner
+from src.environment.traffic.vehicles.trains.train import Train
+from src.environment.traffic.vehicles.vehicle_spawner import VehicleSpawner
 import random
 import pygame
 import os

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import pygame
-from src.environment.traffic.vehicle_service import VehicleService
-from src.environment.traffic.traffic_light_service import TrafficLightService
+from src.environment.traffic.vehicles.vehicle_service import VehicleService
+from src.environment.traffic.traffic_lights.traffic_light_service import TrafficLightService
 from src.game.constants import CANVAS_WIDTH, CANVAS_HEIGHT, TRAFFIC_LIGHT_PHASES, TOTAL_LANE_COUNT, LANE_NAMES
 from src.game.map import Map
 import random

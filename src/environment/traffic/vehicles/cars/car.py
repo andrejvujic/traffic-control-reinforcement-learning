@@ -1,5 +1,5 @@
 from src.game.constants import CELL_SIZE, ROWS, COLUMNS
-from src.environment.traffic.vehicle import Vehicle
+from src.environment.traffic.vehicles.vehicle import Vehicle
 
 import pygame
 
@@ -39,7 +39,7 @@ class Car(Vehicle):
         if isinstance(other, Car):
             return other.lane_index != self.lane_index and other.position() == self.position()
 
-        from src.environment.traffic.train import Train
+        from src.environment.traffic.vehicles.trains.train import Train
         if isinstance(other, Train):
             return self.position() in other.occupied_positions()
 

@@ -1,6 +1,6 @@
-from src.environment.traffic.spawn_configuration import SpawnConfiguration
-from src.environment.traffic.checkpoint import Checkpoint
-from src.environment.traffic.vehicle_state import VehicleState
+from src.environment.traffic.vehicles.spawn_configuration import SpawnConfiguration
+from src.environment.traffic.vehicles.checkpoint import Checkpoint
+from src.environment.traffic.vehicles.vehicle_state import VehicleState
 
 COLUMNS = 21
 ROWS = 21

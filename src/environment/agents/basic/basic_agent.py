@@ -3,7 +3,7 @@ from src.environment.agents.agent import Agent
 
 
 class BasicAgent(Agent):
-    def __init__(self, update_interval=32):
+    def __init__(self, update_interval=48):
         super().__init__(
             name='Basic'
         )
